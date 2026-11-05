@@ -1,0 +1,2576 @@
+<!doctype html><html lang="id"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="description" content="Rapikan resi marketplace untuk printer thermal. Cetak lewat Bluetooth atau browser, simpan PNG atau PDF."><meta name="theme-color" content="#F9A11C"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"></head><body>
+<title>Rapikan Resi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: kartu judul cokelat di atas; di bawahnya kolom kiri berisi pratinjau di "slot printer" dan tombol cetak,
+   kolom kanan berisi pengaturan. Satu kolom di HP dengan urutan: file, pratinjau, cetak, pengaturan.
+   Warna: cokelat #4B3721 dan oranye #F9A11C sebagai merek, netral hangat untuk permukaan. */
+:root {
+  --bg: #FAFAF9;
+  --surface: #FFFFFF;
+  --surface-2: #F4F4F2;
+  --ink: #18181B;
+  --muted: #71717A;
+  --line: #E8E8E4;
+  --brand: #18181B;
+  --accent: #F9A11C;
+  --accent-hover: #FFB445;
+  --on-accent: #18181B;
+  --accent-soft: #FFF4DE;
+  --focus: #18181B;
+  --hero-ink: #18181B;
+  --tray: #F1F0EE;
+  --tray-ink: #6B6B66;
+  --paper: #FFFFFF;
+  --ok: #1D7A4B;
+  --warn: #B4440B;
+  --shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 8px 24px -12px rgba(24, 24, 27, 0.10);
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E0E10; --surface: #17171A; --surface-2: #1F1F23; --ink: #F4F4F5; --muted: #A1A1AA; --line: #2A2A2F;
+    --brand: #F4F4F5; --accent-hover: #FFB445; --on-accent: #1A1206; --accent-soft: #2B2110; --focus: #FFD28A;
+    --hero-ink: #F4F4F5; --tray: #0A0A0B; --tray-ink: rgba(255, 255, 255, 0.55);
+    --ok: #55C98E; --warn: #F0A064; --shadow: 0 0 0 transparent;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E0E10; --surface: #17171A; --surface-2: #1F1F23; --ink: #F4F4F5; --muted: #A1A1AA; --line: #2A2A2F;
+  --brand: #F4F4F5; --accent-hover: #FFB445; --on-accent: #1A1206; --accent-soft: #2B2110; --focus: #FFD28A;
+  --hero-ink: #F4F4F5; --tray: #0A0A0B; --tray-ink: rgba(255, 255, 255, 0.55);
+  --ok: #55C98E; --warn: #F0A064; --shadow: 0 0 0 transparent;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-inline: 16px;
+  padding-block: 20px 56px;
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 18px; }
+
+/* Kartu judul */
+.hero { padding: 18px 2px 4px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.titlebox { display: grid; gap: 6px; min-width: 0; }
+.by { margin: 0; font: 600 12px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.langsw { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.langsw button { min-width: 42px; min-height: 36px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: 700 12px var(--font-body); letter-spacing: 0.04em; cursor: pointer; }
+.langsw button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+#foot-links { display: flex; justify-content: center; gap: 18px; }
+#foot-links[hidden] { display: none; }
+.linkbtn { border: 0; background: none; color: var(--ink); font: 600 13px var(--font-body); text-decoration: underline; cursor: pointer; padding: 8px; }
+.linkbtn[hidden] { display: none; }
+#foot-links a { color: var(--ink); font-weight: 600; }
+.hero .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 9vw, 52px); line-height: 1; letter-spacing: -0.035em; color: var(--ink); }
+h1 .hl { color: inherit; }
+h1::after { content: ""; display: inline-block; width: 0.17em; height: 0.17em; margin-left: 0.07em; border-radius: 50%; background: var(--accent); }
+
+/* Kartu umum */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 20px; display: grid; gap: 16px; min-width: 0; box-shadow: var(--shadow); }
+.panel h2 { margin: 0; font: 700 16px/1.3 var(--font-body); letter-spacing: -0.005em; }
+.panel p, .note { margin: 0; font-size: 13px; color: var(--muted); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Pilih file */
+.drop { display: flex; align-items: center; gap: 16px; padding: 18px; border: 1.5px dashed var(--line); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.drop:hover, .drop.over { background: var(--accent-soft); border-color: var(--accent); }
+.drop .ic { flex: none; width: 52px; height: 52px; border-radius: 16px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; }
+.drop .ic svg { width: 26px; height: 26px; }
+.drop .t { min-width: 0; display: grid; gap: 3px; }
+.drop strong { font: 700 17px/1.25 var(--font-body); }
+.drop .s { color: var(--muted); font-size: 13px; }
+.drop .f { justify-self: start; max-width: 100%; margin-top: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); font: 500 12px/1.6 var(--font-mono); overflow-wrap: anywhere; }
+.drop.has { border-style: solid; }
+.vh:focus-visible + .drop { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (min-width: 800px) { .layout { grid-template-columns: minmax(0, 370px) minmax(0, 1fr); gap: 22px; } }
+.leftcol, .controls { display: grid; gap: 18px; min-width: 0; }
+
+/* Pratinjau di slot printer */
+.tray { background: var(--tray); border-radius: 22px; padding: 14px 14px 16px; display: grid; gap: 12px; }
+.stage { width: min(100%, 300px); margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr) 26px; grid-template-rows: 24px auto; }
+.ruler { display: flex; align-items: center; justify-content: center; position: relative; color: var(--tray-ink); font: 500 11px/1 var(--font-mono); letter-spacing: 0.04em; }
+.ruler::before { content: ""; position: absolute; inset: 50% 0 auto 0; border-top: 1px solid var(--tray-ink); opacity: 0.55; }
+.ruler span { position: relative; padding-inline: 8px; background: var(--tray); }
+.ruler.h { grid-column: 1; grid-row: 1; }
+.ruler.h::after, .ruler.v::after { content: ""; position: absolute; inset: 35% 0 35% 0; border-inline: 1px solid var(--tray-ink); opacity: 0.55; }
+.ruler.v { grid-column: 2; grid-row: 2; }
+.ruler.v::before { inset: 0 auto 0 50%; border-top: 0; border-left: 1px solid var(--tray-ink); }
+.ruler.v::after { inset: 0 35% 0 35%; border-inline: 0; border-block: 1px solid var(--tray-ink); }
+.ruler.v span { writing-mode: vertical-rl; padding: 8px 0; }
+.slotbar { grid-column: 1; grid-row: 2; align-self: start; height: 12px; margin-inline: -8px; margin-top: -2px; border-radius: 8px; background: linear-gradient(180deg, #120C06, #2A1D10); box-shadow: 0 2px 0 rgba(255, 255, 255, 0.08) inset; position: relative; z-index: 2; }
+.label { grid-column: 1; grid-row: 2; margin-top: 10px; position: relative; aspect-ratio: var(--lw, 78) / var(--lh, 100); background: var(--paper); border-radius: 2px 2px 3px 3px; overflow: hidden; box-shadow: 0 14px 28px -14px rgba(24, 24, 27, 0.35), 0 0 0 1px rgba(24, 24, 27, 0.06); }
+.label::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 10px; background: linear-gradient(180deg, rgba(20, 12, 4, 0.22), transparent); z-index: 1; pointer-events: none; }
+.label img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.ruler.v { margin-top: 10px; }
+.strip { position: absolute; top: 0; bottom: 0; pointer-events: none; background: repeating-linear-gradient(135deg, rgba(249, 161, 28, 0.28) 0 4px, transparent 4px 8px); }
+.strip.l { left: 0; } .strip.r { right: 0; }
+.cap { margin: 0; text-align: center; font: 500 11.5px/1.5 var(--font-mono); color: var(--tray-ink); }
+.pager { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.pager[hidden] { display: none; }
+.pager span { font: 500 13px var(--font-mono); min-width: 11ch; text-align: center; color: var(--ink); }
+.pager .btn { background: var(--surface); color: var(--ink); }
+.pager .btn:hover:not(:disabled) { border-color: var(--accent); }
+
+/* Kontrol */
+.field { display: grid; gap: 8px; min-width: 0; }
+.field[hidden] { display: none; }
+.field > .lab, .field > label { font-weight: 700; font-size: 14px; }
+.field .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.field .row label { font-weight: 700; font-size: 14px; }
+.field .val { font: 500 12px var(--font-mono); color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; }
+.field .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.field .mini { display: grid; gap: 4px; font-weight: 600; font-size: 13px; color: var(--muted); min-width: 0; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.pair[hidden] { display: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: 600 13.5px var(--font-body); cursor: pointer; transition: background 0.12s, border-color 0.12s; }
+.chip-btn:hover { border-color: var(--accent); }
+.chip-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+input[type="number"], input[type="text"], select { width: 100%; min-height: 44px; padding: 0 12px; background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); border-radius: 10px; font: 500 15px var(--font-body); }
+input[type="number"]:focus, input[type="text"]:focus, select:focus { border-color: var(--accent); }
+/* Slider hanya bisa digeser lewat bulatannya, jadi sentuhan di jalur tidak mengubah nilai saat halaman digulir. */
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; background: transparent; margin: 0; pointer-events: none; touch-action: pan-y; }
+input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--line); }
+input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; cursor: grab; touch-action: pan-y; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+input[type="range"]::-moz-range-thumb { pointer-events: auto; cursor: grab; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+.check { display: flex; align-items: center; gap: 12px; min-height: 32px; cursor: pointer; font-weight: 500; }
+.check input { -webkit-appearance: none; appearance: none; flex: none; width: 44px; height: 26px; margin: 0; border-radius: 13px; background: var(--line); position: relative; cursor: pointer; transition: background 0.15s; }
+.check input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); transition: left 0.15s; }
+.check input:checked { background: var(--accent); }
+.check input:checked::after { left: 21px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.btn { min-height: 46px; padding: 0 18px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: 700 15px var(--font-body); cursor: pointer; transition: background 0.12s, border-color 0.12s, transform 0.08s; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn[hidden] { display: none; }
+.btn.small { min-height: 40px; min-width: 44px; padding: 0 12px; }
+.actions { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.actions .wide { grid-column: 1 / -1; }
+
+.conn { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1.5px solid var(--line); border-radius: 999px; font: 500 12px var(--font-mono); background: var(--surface-2); }
+.chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.chip.on { color: var(--ok); border-color: var(--ok); }
+.chip.on i { background: var(--ok); box-shadow: 0 0 0 4px rgba(29, 122, 75, 0.18); }
+.status { margin: 0; font-size: 13px; color: var(--muted); }
+.status:empty { display: none; }
+.status.err { color: var(--warn); font-weight: 600; }
+.bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.bar[hidden] { display: none; }
+.bar > div { height: 100%; width: 0; background: var(--accent); transition: width 0.1s linear; }
+.warnbox { border: 1.5px solid var(--warn); border-radius: 14px; padding: 14px; font-size: 13px; color: var(--ink); display: grid; gap: 6px; background: var(--surface); }
+.warnbox[hidden] { display: none; }
+.warnbox code { font: 500 12px var(--font-mono); overflow-wrap: anywhere; background: var(--surface-2); padding: 2px 6px; border-radius: 6px; }
+.infobox { border: 1.5px solid var(--accent); border-radius: 14px; padding: 14px; font-size: 13px; color: var(--ink); background: var(--accent-soft); }
+.artonly { display: none; }
+.art .artonly { display: block; }
+.art .btonly { display: none !important; }
+details summary { cursor: pointer; font-weight: 700; min-height: 32px; display: flex; align-items: center; }
+details[open] summary { margin-bottom: 14px; }
+details > .inner { display: grid; gap: 16px; }
+pre.log { margin: 0; max-height: 160px; overflow: auto; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); font: 500 11px/1.5 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); }
+.sec { display: grid; gap: 14px; }
+.sec[hidden] { display: none; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface-2); border: 1.5px solid var(--line); border-radius: 12px; }
+.seg button { min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: 700 14px var(--font-body); cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--accent); color: var(--on-accent); }
+.pickany { margin: -8px 0 0; font-size: 13px; color: var(--muted); }
+.pickany .linkbtn { padding: 4px; font-size: 13px; }
+.pwbox { border: 1.5px solid var(--accent); border-radius: 14px; padding: 14px; display: grid; gap: 10px; background: var(--accent-soft); color: var(--ink); font-size: 14px; }
+.pwbox[hidden] { display: none; }
+.pwbox input { width: 100%; min-height: 44px; padding: 0 12px; background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); border-radius: 10px; font: 500 15px var(--font-body); }
+.pwbox input:focus { border-color: var(--accent); }
+/* Editor resi: tutup bagian yang tidak ingin dicetak dan potong tepi */
+.editbar { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.editbar .btn { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); }
+.editbar .btn svg { width: 18px; height: 18px; flex: none; }
+.editnote { font: 500 12px/1.4 var(--font-mono); color: var(--ink); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; }
+.editnote:empty { display: none; }
+.ed-scrim { position: fixed; inset: 0; z-index: 50; background: rgba(12, 10, 8, 0.55); display: grid; place-items: center;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.ed-scrim[hidden] { display: none; }
+.ed { width: min(100%, 720px); max-height: 100%; overflow: auto; background: var(--surface); color: var(--ink); border-radius: 22px; border: 1px solid var(--line); padding: 18px; display: grid; gap: 14px; box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.5); }
+.ed-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ed-head h2 { margin: 0; font: 700 18px/1.2 var(--font-body); }
+.ed-hint { margin: 0; font-size: 13px; color: var(--muted); }
+.ed-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ed-tools .seg { flex: 1 1 260px; }
+.ed-stagewrap { background: var(--tray); border-radius: 16px; padding: 12px; display: grid; place-items: center; min-width: 0; }
+.ed-stage { position: relative; display: inline-block; max-width: 100%; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; border-radius: 2px; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.08), 0 10px 24px -14px rgba(24, 24, 27, 0.4); }
+.ed-stage canvas { display: block; max-width: 100%; max-height: min(62vh, 640px); width: auto; height: auto; background: #fff; }
+.ed-r { position: absolute; box-sizing: border-box; cursor: move; touch-action: none; }
+.ed-r.hide { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0 6px, rgba(255, 244, 222, 0.92) 6px 12px); border: 2px dashed #C77A06; }
+.ed-r.crop { border: 2px solid #F9A11C; box-shadow: 0 0 0 9999px rgba(12, 10, 8, 0.5); background: transparent; }
+.ed-r.sel { outline: 2px solid #18181B; outline-offset: 1px; }
+.ed-r .tag { position: absolute; left: 4px; top: 4px; font: 700 10px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: #6B3F00; background: #FFF4DE; border-radius: 4px; padding: 3px 5px; pointer-events: none; white-space: nowrap; }
+.ed-r.crop .tag { color: #1A1206; background: #F9A11C; }
+.ed-r .x { position: absolute; right: -2px; top: -2px; width: 30px; height: 30px; border: 0; border-radius: 0 0 0 10px; background: #18181B; color: #fff; font: 700 16px/1 var(--font-body); cursor: pointer; display: grid; place-items: center; }
+.ed-r .hd { position: absolute; width: 22px; height: 22px; right: -11px; bottom: -11px; border-radius: 50%; background: #fff; border: 2px solid #18181B; cursor: nwse-resize; touch-action: none; }
+.ed-r .hd.tl { left: -11px; top: -11px; right: auto; bottom: auto; }
+.ed-scope { display: grid; gap: 8px; }
+.ed-scope .lab { font-weight: 700; font-size: 14px; }
+.ed-foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+.ed-foot .grp { display: flex; flex-wrap: wrap; gap: 10px; }
+.ed-msg { margin: 0; font-size: 13px; color: var(--muted); }
+.ed-msg:empty { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ed-r.sel { outline-color: #F4F4F5; } }
+:root[data-theme="dark"] .ed-r.sel { outline-color: #F4F4F5; }
+.filebar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: -8px; }
+.filebar[hidden] { display: none; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; column-gap: 10px; align-items: center; padding: 4px 2px; }
+.steps li::before { content: counter(s); grid-row: span 2; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line); color: var(--ink); display: grid; place-items: center; font: 700 12px var(--font-body); }
+.steps b { font-size: 14px; }
+.steps span { font-size: 12.5px; color: var(--muted); }
+@media (min-width: 640px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+.privacy { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 13px; color: var(--muted); }
+.privacy svg { flex: none; width: 16px; height: 16px; margin-top: 3px; color: var(--ok); }
+.help details { border-top: 1px solid var(--line); padding-block: 8px; }
+.help details:first-of-type { border-top: 0; }
+.help details p { margin: 0 0 6px; }
+.help details[open] summary { margin-bottom: 8px; }
+.foot { text-align: center; font-size: 12.5px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow vh" id="eyebrow">Label 78 × 100 mm · 203 dpi</p>
+    <div class="titlebox">
+      <h1>Rapikan <span class="hl">Resi</span></h1>
+      <p class="by">By Hopillo</p>
+    </div>
+    <div class="langsw" role="group" aria-label="Bahasa / Language">
+      <button type="button" data-l="id" aria-pressed="true">ID</button>
+      <button type="button" data-l="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <ol class="steps">
+    <li><b>Pilih file resi</b><span>PDF atau foto</span></li>
+    <li><b>Cek pratinjau</b><span>Ukuran label dan jumlah resi</span></li>
+    <li><b>Cetak atau simpan</b><span>Browser, Bluetooth, PNG, PDF</span></li>
+  </ol>
+  <p class="privacy">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+    <span>File resi dan data pembeli diproses di perangkatmu dan tidak diunggah ke server.</span>
+  </p>
+
+  <div class="infobox artonly">Cetak langsung lewat Bluetooth tersedia di file <b>rapikan-resi-cetak.html</b> yang dikirim di chat. Di halaman ini kamu bisa merapikan resi lalu menyimpannya sebagai PNG atau PDF.</div>
+
+  <input class="vh" type="file" id="file" accept="application/pdf,.pdf,.PDF,image/*" multiple>
+  <input class="vh" type="file" id="file-add" accept="application/pdf,.pdf,.PDF,image/*" multiple tabindex="-1" aria-hidden="true">
+  <input class="vh" type="file" id="file-any" multiple tabindex="-1" aria-hidden="true">
+  <label class="drop" id="drop" for="file">
+    <span class="ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V5"/><path d="m7 9.5 5-5 5 5"/><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>
+    </span>
+    <span class="t">
+      <strong>Pilih file resi</strong>
+      <span class="s">PDF atau foto. Bisa pilih banyak file sekaligus.</span>
+      <span class="f" id="fname">Sekarang memakai resi contoh</span>
+    </span>
+  </label>
+
+  <p class="note pickany">File resi tidak muncul di daftar? <button class="linkbtn" id="pickany" type="button">Tampilkan semua file</button></p>
+
+  <div class="pwbox" id="pwbox" hidden>
+    <label for="pwin"><b id="pwname"></b> dikunci kata sandi. Masukkan kata sandinya untuk membuka.</label>
+    <input type="password" id="pwin" autocomplete="off">
+    <p class="status err" id="pwerr"></p>
+    <div class="actions">
+      <button class="btn primary" id="pwok" type="button">Buka PDF</button>
+      <button class="btn" id="pwskip" type="button">Lewati file ini</button>
+    </div>
+  </div>
+
+  <div class="filebar" id="filebar" hidden>
+    <button class="btn small" id="addmore" type="button">+ Tambah file</button>
+    <button class="btn small" id="clearall" type="button">Kosongkan</button>
+  </div>
+
+  <div class="layout">
+    <div class="leftcol">
+      <section class="tray" aria-label="Pratinjau hasil">
+        <div class="stage">
+          <div class="ruler h"><span id="rh">78 mm</span></div>
+          <div class="slotbar" aria-hidden="true"></div>
+          <div class="label">
+            <img id="pv" alt="Pratinjau hasil cetak" width="623" height="799">
+            <span class="strip l" id="sl"></span>
+            <span class="strip r" id="sr"></span>
+          </div>
+          <div class="ruler v"><span id="rv">100 mm</span></div>
+        </div>
+        <p class="cap" id="cap">Menyiapkan pratinjau…</p>
+        <div class="pager" id="pager" hidden>
+          <button class="btn small" id="prev" type="button" aria-label="Resi sebelumnya">‹</button>
+          <span id="pg">1 / 1</span>
+          <button class="btn small" id="next" type="button" aria-label="Resi berikutnya">›</button>
+        </div>
+        <div class="editbar">
+          <button class="btn small" id="edit-open" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9"/><path d="M14.5 14.5 20 20"/><path d="M8.1 8.1 12 12"/></svg>
+            <span>Edit resi</span>
+          </button>
+          <span class="editnote" id="edit-note"></span>
+        </div>
+      </section>
+
+      <div class="panel btonly" id="printpanel">
+        <h2>Cetak</h2>
+        <div class="field">
+          <label class="mini" for="copies">Salinan per resi<input type="number" id="copies" min="1" max="20" step="1" value="1" inputmode="numeric"></label>
+        </div>
+        <div class="seg" role="tablist" aria-label="Cara mencetak">
+          <button type="button" role="tab" id="tab-browser" aria-selected="true">Lewat browser</button>
+          <button type="button" role="tab" id="tab-bt" aria-selected="false">Bluetooth langsung</button>
+        </div>
+        <div class="sec" id="m-browser">
+          <p>Cocok untuk printer yang terpasang di komputer lewat USB atau driver, dan printer yang punya layanan cetak di HP. Di kotak cetak, pilih printer dan ukuran kertas sama dengan label, margin Tidak ada, skala 100%.</p>
+          <div class="actions">
+            <button class="btn primary" id="bprint" type="button">Cetak resi ini</button>
+            <button class="btn" id="bprint-all" type="button" hidden>Cetak semua</button>
+            <button class="btn" id="bprint-test" type="button">Cetak pola posisi</button>
+          </div>
+          <p class="status" id="status-b" aria-live="polite"></p>
+        </div>
+        <div class="sec" id="m-bt" hidden>
+        <div class="warnbox" id="nobt" hidden>
+          <strong>Bluetooth tidak tersedia di tampilan ini.</strong>
+          <span id="nobt-msg"></span>
+          <span>Pakai Chrome atau Edge di Android atau komputer, dengan halaman dibuka lewat alamat https atau file lokal. Cara lain yang tetap bisa dipakai: Cetak lewat browser atau Simpan PNG.</span>
+        </div>
+        <div class="conn">
+          <button class="btn primary" id="connect" type="button">Sambung printer</button>
+          <button class="btn" id="reconnect" type="button" hidden>Sambung ulang</button>
+          <span class="chip" id="chip"><i></i><span id="chip-t">Belum tersambung</span></span>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="print" type="button" disabled>Cetak resi ini</button>
+          <button class="btn" id="print-all" type="button" disabled hidden>Cetak semua</button>
+          <button class="btn" id="print-test" type="button" disabled>Cetak pola posisi</button>
+        </div>
+        <div class="bar" id="bar" hidden><div id="barfill"></div></div>
+        <p class="status" id="status" aria-live="polite"></p>
+        <p>Nyalakan printer dan tutup aplikasi printer lain yang sedang tersambung. Jika printer tidak muncul di daftar, kemungkinan memakai Bluetooth klasik yang tidak bisa dipakai browser. Pakai Simpan PNG lalu cetak dari aplikasi printer.</p>
+        </div>
+      </div>
+      <p class="status artonly" id="status-art" aria-live="polite"></p>
+
+      <div class="panel">
+        <h2>Simpan hasil</h2>
+        <div class="actions">
+          <button class="btn" id="save-png" type="button">Simpan PNG</button>
+          <button class="btn" id="save-pdf" type="button">Simpan PDF</button>
+        </div>
+        <p class="status" id="status-save" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <section class="controls">
+      <div class="panel">
+        <h2>Ukuran dan hasil</h2>
+        <div class="field">
+          <span class="lab" id="size-lab">Ukuran label</span>
+          <select id="size" class="vh" tabindex="-1" aria-hidden="true">
+            <option value="100x150" selected>100 × 150 mm · A6, ukuran resi standar marketplace</option>
+            <option value="100x100">100 × 100 mm</option>
+            <option value="80x100">80 × 100 mm</option>
+            <option value="78x100">78 × 100 mm · mis. Blueprint Eco80BT, Xprinter XP-420B</option>
+            <option value="70x50">70 × 50 mm</option>
+            <option value="58x40">58 × 40 mm</option>
+            <option value="50x30">50 × 30 mm</option>
+            <option value="manual">Manual…</option>
+          </select>
+          <div class="chips" id="size-chips" role="group" aria-labelledby="size-lab"></div>
+          <span class="note" id="size-hint"></span>
+          <div class="pair" id="size-manual" hidden>
+            <label class="mini" for="lw">Lebar (mm)<input type="number" id="lw" inputmode="decimal" min="20" max="210" step="0.5" value="78"></label>
+            <label class="mini" for="lh">Tinggi (mm)<input type="number" id="lh" inputmode="decimal" min="20" max="400" step="0.5" value="100"></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="printer">Printer</label>
+          <select id="printer">
+            <option value="104x203" selected>Printer label 4 inci (mis. Xprinter XP-420B) · cetak 104 mm, 203 dpi</option>
+            <option value="104x300">Printer label 4 inci · cetak 104 mm, 300 dpi</option>
+            <option value="78x203">Blueprint Eco80BT · cetak 78 mm, 203 dpi</option>
+            <option value="72x203">Printer struk 80 mm (mis. VSC MP-80M) · cetak 72 mm</option>
+            <option value="48x203">Printer struk 58 mm (mis. Eppos POS58L) · cetak 48 mm</option>
+            <option value="manual">Manual…</option>
+          </select>
+          <span class="note" id="fit-note"></span>
+          <div class="pair" id="printer-manual" hidden>
+            <label class="mini" for="pw">Lebar cetak (mm)<input type="number" id="pw" inputmode="decimal" min="20" max="210" step="0.5" value="78"></label>
+            <label class="mini" for="dpi">Resolusi
+              <select id="dpi"><option value="203" selected>203 dpi</option><option value="300">300 dpi</option></select>
+            </label>
+          </div>
+        </div>
+        <div class="field" id="sort-wrap" hidden>
+          <span class="lab" id="sort-lab">Urutan resi</span>
+          <select id="sort" class="vh" tabindex="-1" aria-hidden="true">
+            <option value="asli" selected>Sesuai file</option>
+            <option value="kurir">Per kurir</option>
+            <option value="produk">Per nama produk</option>
+          </select>
+          <div class="chips" id="sort-chips" role="group" aria-labelledby="sort-lab"></div>
+          <span class="note" id="sort-note"></span>
+        </div>
+        <div class="field">
+          <span class="lab" id="split-lab">Jumlah resi per halaman file</span>
+          <select id="split" class="vh" tabindex="-1" aria-hidden="true">
+            <option value="1" selected>Satu resi</option>
+            <option value="auto">Otomatis pisahkan</option>
+            <option value="c2">2 resi, kiri dan kanan</option>
+            <option value="r2">2 resi, atas dan bawah</option>
+            <option value="g4">4 resi, 2 × 2</option>
+          </select>
+          <div class="chips" id="split-chips" role="group" aria-labelledby="split-lab"></div>
+          <span class="note" id="split-note"></span>
+        </div>
+        <div class="field">
+          <div class="row"><label for="thick">Ketebalan cetak</label><span class="val" id="v-thick">Sedang</span></div>
+          <input type="range" id="thick" min="0" max="100" step="1" value="45">
+          <div class="ends"><span>Tipis</span><span>Tebal</span></div>
+        </div>
+        <div class="field">
+          <div class="row"><label for="margin">Pinggir atas dan bawah</label><span class="val" id="v-margin">1,5 mm</span></div>
+          <input type="range" id="margin" min="0" max="8" step="0.5" value="2">
+        </div>
+        <div class="field">
+          <div class="row"><label for="hmargin">Pinggir kiri dan kanan</label><span class="val" id="v-hmargin">2 mm</span></div>
+          <input type="range" id="hmargin" min="0" max="10" step="0.5" value="2">
+        </div>
+        <div class="field">
+          <div class="row"><label for="shx">Geser ke kiri atau kanan</label><span class="val" id="v-shx">Tengah</span></div>
+          <input type="range" id="shx" min="-10" max="10" step="0.5" value="0">
+        </div>
+        <div class="field">
+          <div class="row"><label for="shy">Geser ke atas atau bawah</label><span class="val" id="v-shy">Standar</span></div>
+          <input type="range" id="shy" min="-10" max="10" step="0.5" value="0">
+          <span class="note">Pakai tiga pengaturan ini kalau resi terpotong atau tidak di tengah. Cetak pola posisi dulu, baca angka penggaris di kedua tepi kertas, lalu geser setengah dari selisihnya ke arah angka yang lebih besar.</span>
+        </div>
+        <label class="check"><input type="checkbox" id="trim" checked> Potong otomatis bagian kosong</label>
+        <label class="check"><input type="checkbox" id="rotate" checked> Putar otomatis jika resi lebih pas dalam posisi miring</label>
+        <label class="check"><input type="checkbox" id="deskew" checked> Luruskan otomatis resi yang miring (foto dan PDF hasil scan)</label>
+        <label class="check"><input type="checkbox" id="sharp" checked> Pertajam teks kecil dan nomor resi</label>
+        <label class="check"><input type="checkbox" id="fill"> Regangkan ke bawah agar mengisi kertas (maks. 25%)</label>
+        <span class="note" id="fill-note">Isi resi diperbesar ke arah tinggi saja, jadi hurufnya sedikit lebih tinggi. Setelah mencoba, pindai barcode dan kode QR sekali untuk memastikan masih terbaca.</span>
+        <div class="field extra-box">
+          <label class="check"><input type="checkbox" id="extra"> Tambahkan barcode dan nomor resi</label>
+          <div class="sec" id="extra-opts" hidden>
+            <div class="field">
+              <span class="lab" id="expos-lab">Posisi barcode dan nomor</span>
+              <select id="expos" class="vh" tabindex="-1" aria-hidden="true">
+                <option value="bottom" selected>Di bawah resi</option>
+                <option value="top">Di atas resi</option>
+              </select>
+              <div class="chips" id="expos-chips" role="group" aria-labelledby="expos-lab"></div>
+            </div>
+            <label class="check"><input type="checkbox" id="ex-bar" checked> Cetak barcode</label>
+            <label class="check"><input type="checkbox" id="ex-num" checked> Cetak nomor resi</label>
+            <div class="field">
+              <label for="resino">Nomor resi untuk label ini</label>
+              <input type="text" id="resino" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Terbaca otomatis dari PDF">
+              <span class="note" id="resino-note"></span>
+            </div>
+            <div class="field">
+              <div class="row"><label for="exh">Tinggi barcode</label><span class="val" id="v-exh">10 mm</span></div>
+              <input type="range" id="exh" min="6" max="18" step="1" value="10">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel btonly" id="advpanel">
+        <details>
+          <summary>Pengaturan printer lanjutan</summary>
+          <div class="inner">
+            <div class="field">
+              <label for="lang">Bahasa perintah</label>
+              <select id="lang">
+                <option value="tspl" selected>TSPL · printer label (Eco80BT)</option>
+                <option value="cpcl">CPCL · printer label portabel</option>
+                <option value="escpos">ESC/POS · printer struk</option>
+                <option value="zpl">ZPL · printer gaya Zebra</option>
+              </select>
+            </div>
+            <div class="pair">
+              <label class="mini" id="gap-wrap" for="gap">Celah label (mm)<input type="number" id="gap" min="0" max="10" step="0.5" value="3" inputmode="decimal"></label>
+            </div>
+            <div class="field" id="dens-wrap">
+              <div class="row"><label for="dens">Kepekatan printer</label><span class="val" id="v-dens">8</span></div>
+              <input type="range" id="dens" min="0" max="15" step="1" value="8">
+              <div class="ends"><span>Terang</span><span>Gelap</span></div>
+            </div>
+            <div class="field">
+              <label for="chunk">Kecepatan kirim data</label>
+              <select id="chunk">
+                <option value="20">Paling aman · 20 byte</option>
+                <option value="100" selected>Sedang · 100 byte</option>
+                <option value="180">Cepat · 180 byte</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="chsel">Saluran tulis Bluetooth</label>
+              <select id="chsel" disabled><option>Sambungkan printer dulu</option></select>
+            </div>
+            <label class="check"><input type="checkbox" id="invert"> Balik warna, pakai jika hasil cetak negatif</label>
+            <button class="btn" id="calib" type="button" disabled>Kalibrasi sensor label</button>
+            <p>Kalibrasi dilakukan setiap ganti gulungan label. Printer akan menarik beberapa label kosong. Tersedia untuk TSPL dan ZPL.</p>
+            <pre class="log" id="log" aria-live="off">Log sambungan akan muncul di sini.</pre>
+          </div>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel help" aria-label="Bantuan">
+    <h2>Bantuan</h2>
+    <div>
+      <details>
+        <summary>Hasil cetak kekecilan</summary>
+        <p>Pilih ukuran label yang sama dengan kertas di printer. Jika mencetak lewat aplikasi lain, atur ukuran kertas yang sama, margin 0, dan skala 100%. Pastikan juga printer yang dipilih di atas sesuai, karena lebar area cetak memengaruhi ukuran resi.</p>
+      </details>
+      <details>
+        <summary>Hasil terlalu tebal, pudar, atau buram</summary>
+        <p>Geser Ketebalan cetak ke Tipis atau Tebal sampai garis dan barcode tajam. Kepekatan di printer juga berpengaruh. Turunkan jika hitamnya terlalu pekat, dan pakai kertas thermal yang bagus.</p>
+      </details>
+      <details>
+        <summary>Resi terpotong atau bergeser</summary>
+        <p>Jalankan kalibrasi sensor label di printer setiap ganti gulungan. Pastikan ukuran label dan area cetak sesuai. Printer tidak bisa mencetak sampai ke tepi kertas, jadi isi di tepi bisa hilang. Cetak pola posisi, baca angka penggaris di kedua tepi kertas, lalu geser setengah dari selisihnya ke arah angka yang lebih besar. Kalau bagian atas hilang, geser ke bawah.</p>
+      </details>
+      <details>
+        <summary>Hasil cetak miring</summary>
+        <p>Kalau resi di pratinjau sudah lurus tetapi hasil cetaknya miring, penyebabnya ada di printer. Pasang gulungan label lurus, rapatkan penjepit kertas ke kedua sisi label, dan jangan biarkan gulungan bergeser ke samping saat ditarik. Kalau resi aslinya foto atau hasil scan yang miring, nyalakan Luruskan otomatis di pengaturan.</p>
+      </details>
+      <details>
+        <summary>Satu halaman PDF berisi beberapa resi</summary>
+        <p>Pilih Otomatis pisahkan, atau pilih tata letak yang cocok seperti 2 resi kiri dan kanan, atau 4 resi 2 × 2. Hasilnya bisa digeser satu per satu di pratinjau.</p>
+      </details>
+      <details>
+        <summary>Barcode dan nomor resi tambahan</summary>
+        <p>Aktifkan Tambahkan barcode dan nomor resi, lalu pilih posisinya di bawah atau di atas resi. Aplikasi membaca nomor dari PDF dan membuat barcode Code 128 yang tajam, jadi mudah dipindai walau resi asli diperkecil. Untuk foto atau PDF hasil scan, ketik nomornya sendiri.</p>
+      </details>
+      <details>
+        <summary>Printer tidak muncul saat menyambung Bluetooth</summary>
+        <p>Browser hanya bisa menyambung ke printer Bluetooth jenis BLE. Banyak printer memakai Bluetooth klasik sehingga tidak muncul. Pakai Cetak lewat browser, atau Simpan PNG lalu cetak dari aplikasi printer.</p>
+      </details>
+      <details>
+        <summary>Bagaimana di iPhone atau iPad?</summary>
+        <p>Safari belum mendukung Bluetooth browser. Pakai Simpan PNG atau PDF, lalu cetak dari aplikasi printer, atau Cetak lewat browser jika printernya mendukung AirPrint.</p>
+      </details>
+      <details>
+        <summary>Apakah data resi saya dikirim ke server?</summary>
+        <p>Tidak. File resi dibaca dan diolah langsung di browser di perangkatmu. Halaman hanya memuat pustaka dan huruf dari internet, bukan mengirim file resi.</p>
+      </details>
+    </div>
+  </section>
+
+  <p class="foot" id="foot-links" hidden></p>
+  <p class="foot"><button class="linkbtn" id="install-btn" type="button" hidden>⬇ Pasang aplikasi</button></p>
+  <p class="foot">Rapikan Resi · alat bantu untuk penjual online. Semua pemrosesan terjadi di perangkatmu.</p>
+</div>
+
+<div class="ed-scrim" id="ed" hidden>
+  <div class="ed" role="dialog" aria-modal="true" aria-labelledby="ed-title">
+    <div class="ed-head">
+      <h2 id="ed-title">Edit resi</h2>
+      <button class="btn small" id="ed-close" type="button" aria-label="Tutup editor">✕</button>
+    </div>
+    <p class="ed-hint" id="ed-hint">Seret di gambar untuk menutup bagian yang tidak ingin dicetak, misalnya deskripsi produk. Kotak bisa digeser dan diubah ukurannya.</p>
+    <div class="ed-tools">
+      <div class="seg" role="tablist" aria-label="Alat edit">
+        <button type="button" id="ed-t-hide" role="tab" aria-selected="true">Tutup bagian</button>
+        <button type="button" id="ed-t-crop" role="tab" aria-selected="false">Potong tepi</button>
+      </div>
+      <button class="btn small" id="ed-auto" type="button">Cari deskripsi produk</button>
+    </div>
+    <div class="ed-stagewrap">
+      <div class="ed-stage" id="ed-stage"><canvas id="ed-cv" width="10" height="10"></canvas></div>
+    </div>
+    <p class="ed-msg" id="ed-msg"></p>
+    <div class="ed-scope">
+      <span class="lab">Terapkan ke</span>
+      <div class="seg" role="radiogroup" aria-label="Terapkan ke">
+        <button type="button" id="ed-s-one" role="radio" aria-selected="true">Resi ini saja</button>
+        <button type="button" id="ed-s-all" role="radio" aria-selected="false">Semua resi</button>
+      </div>
+    </div>
+    <div class="ed-foot">
+      <div class="grp">
+        <button class="btn small" id="ed-undo" type="button">Urungkan</button>
+        <button class="btn small" id="ed-reset" type="button">Hapus semua edit</button>
+      </div>
+      <div class="grp">
+        <button class="btn small" id="ed-cancel" type="button">Batal</button>
+        <button class="btn small primary" id="ed-save" type="button">Simpan edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var UI_LANG = 'id';
+  var fmt = function (v) { return String(Math.round(v * 10) / 10).replace('.', UI_LANG === 'en' ? '.' : ','); };
+  var clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var PREF = ['deskew', 'size', 'printer', 'lw', 'lh', 'pw', 'dpi', 'thick', 'margin', 'hmargin', 'shx', 'shy', 'exh', 'expos', 'lang', 'copies', 'gap', 'dens', 'chunk', 'split'];
+  var IN_ART = !!(window.claude && typeof window.claude.use === 'function');
+  if (IN_ART) document.documentElement.classList.add('art');
+
+  var SERVICES = [
+    '000018f0-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb',
+    '0000ffe0-0000-1000-8000-00805f9b34fb', '0000fff0-0000-1000-8000-00805f9b34fb',
+    '0000fee7-0000-1000-8000-00805f9b34fb', '0000ae30-0000-1000-8000-00805f9b34fb',
+    '0000af30-0000-1000-8000-00805f9b34fb', '0000ffc0-0000-1000-8000-00805f9b34fb',
+    '0000ff12-0000-1000-8000-00805f9b34fb', '0000fe59-0000-1000-8000-00805f9b34fb',
+    '49535343-fe7d-4ae5-8fa9-9fafd205e455', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+    '38eb4a80-c570-11e3-9507-0002a5d5c51b', '0000fff6-0000-1000-8000-00805f9b34fb'
+  ];
+  var SPLIT_SHORT = { '1': '1 resi', 'auto': 'Otomatis', 'c2': '2 kiri-kanan', 'r2': '2 atas-bawah', 'g4': '4 resi (2×2)' };
+
+  var S = { kind: 'sample', docs: [], masks: new Map(), items: [{ n: 1, box: null, d: null }], base: [], idx: 0, sample: null, editAll: null };
+  var sortId = 0;
+  var runId = 0, timer = null, previewUrl = null, itemsId = 0;
+  var P = { dev: null, chars: [], ch: null, busy: false };
+  var B = { busy: false };
+  var savedTab = null;
+
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  function setStatus(msg, isErr) {
+    ['status', 'status-art', 'status-b'].forEach(function (id) {
+      var el = $(id);
+      el.textContent = msg || '';
+      el.className = el.className.replace(/\berr\b/g, '').trim() + (isErr ? ' err' : '');
+    });
+  }
+  function setSaveStatus(msg, isErr) {
+    var el = $('status-save');
+    el.textContent = msg || '';
+    el.className = 'status' + (isErr ? ' err' : '');
+  }
+  function log(msg) {
+    var el = $('log');
+    if (el.dataset.init !== '1') { el.textContent = ''; el.dataset.init = '1'; }
+    el.textContent += msg + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  /* ---------- Pilihan berbentuk chip ---------- */
+  function chipify(selId, boxId, short) {
+    var sel = $(selId), box = $(boxId);
+    box.innerHTML = '';
+    Array.prototype.forEach.call(sel.options, function (op) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip-btn';
+      b.dataset.v = op.value;
+      b.textContent = short(op);
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', function () {
+        sel.value = op.value;
+        sel.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      box.appendChild(b);
+    });
+  }
+  function markChips(selId, boxId) {
+    var v = $(selId).value;
+    Array.prototype.forEach.call($(boxId).children, function (b) {
+      b.setAttribute('aria-pressed', b.dataset.v === v ? 'true' : 'false');
+    });
+  }
+
+  /* ---------- Sumber gambar ---------- */
+  function makeSample() {
+    var c = document.createElement('canvas');
+    c.width = 420; c.height = 594;
+    var x = c.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, 420, 594);
+    var L = 34, T = 40, w = 352, h = 514;
+    x.strokeStyle = '#000'; x.lineWidth = 2; x.strokeRect(L, T, w, h);
+    x.fillStyle = '#000'; x.fillRect(L, T, w, 34);
+    x.fillStyle = '#fff'; x.font = '700 15px sans-serif'; x.textBaseline = 'middle';
+    x.fillText('CONTOH RESI · BUKAN RESI ASLI', L + 12, T + 17);
+    var seed = 7;
+    var rnd = function () { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+    var px = L + 20, dark = true;
+    x.fillStyle = '#000';
+    while (px < L + w - 20) {
+      var bw = 1 + Math.floor(rnd() * 3);
+      if (dark) x.fillRect(px, T + 56, bw, 92);
+      dark = !dark; px += bw;
+    }
+    x.fillStyle = '#000'; x.textBaseline = 'alphabetic';
+    x.font = '600 18px monospace'; x.textAlign = 'center';
+    x.fillText('SPXID0000000000', L + w / 2, T + 176);
+    x.textAlign = 'left';
+    x.fillStyle = '#666'; x.fillRect(L, T + 194, w, 1);
+    x.fillStyle = '#000'; x.font = '700 13px sans-serif'; x.fillText('PENERIMA', L + 14, T + 218);
+    x.font = '16px sans-serif'; x.fillText('Nama Contoh', L + 14, T + 242);
+    x.fillStyle = '#555'; x.font = '14px sans-serif';
+    x.fillText('Jl. Contoh No. 12, Kelurahan Contoh', L + 14, T + 264);
+    x.fillText('Kota Contoh 90000', L + 14, T + 284);
+    x.fillStyle = '#666'; x.fillRect(L, T + 306, w, 1);
+    x.fillStyle = '#000'; x.font = '700 13px sans-serif'; x.fillText('PENGIRIM', L + 14, T + 330);
+    x.font = '16px sans-serif'; x.fillText('Toko Contoh', L + 14, T + 354);
+    x.fillStyle = '#888'; x.font = '13px sans-serif';
+    x.fillText('Teks abu-abu ini menjadi hitam tegas', L + 14, T + 378);
+    x.fillStyle = '#666'; x.fillRect(L, T + 400, w, 1);
+    x.fillStyle = '#000'; x.font = '600 14px sans-serif';
+    x.fillText('Berat 250 g', L + 14, T + 430);
+    x.fillText('Qty 1', L + 200, T + 430);
+    x.strokeRect(L + 14, T + 450, 90, 44);
+    x.font = '700 20px sans-serif'; x.fillText('REG', L + 38, T + 479);
+    return c;
+  }
+
+  /* ---------- Meluruskan resi yang miring ----------
+     Sudut kemiringan dicari dari baris teks dan garis di resi (proyeksi piksel gelap),
+     hanya untuk foto dan PDF hasil scan. PDF asli dari marketplace sudah lurus. */
+  var SKEW = new Map();
+  async function rawSourceFor(n, forceSample, d) {
+    if (forceSample || !d) {
+      return { w: 420, h: 594, draw: async function (ctx, sx, sy, sw, sh, dw, dh) { ctx.drawImage(S.sample, sx, sy, sw, sh, 0, 0, dw, dh); } };
+    }
+    if (d.kind === 'image') {
+      return { w: d.img.naturalWidth, h: d.img.naturalHeight, draw: async function (ctx, sx, sy, sw, sh, dw, dh) { ctx.drawImage(d.img, sx, sy, sw, sh, 0, 0, dw, dh); } };
+    }
+    var page = await d.pdf.getPage(n);
+    var v = page.getViewport({ scale: 1 });
+    return {
+      w: v.width, h: v.height, page: page,
+      draw: async function (ctx, sx, sy, sw, sh, dw, dh) {
+        var sc = dw / sw;
+        var vp = page.getViewport({ scale: sc });
+        await page.render({ canvasContext: ctx, viewport: vp, transform: [1, 0, 0, 1, -sx * sc, -sy * sc], background: '#ffffff' }).promise;
+      }
+    };
+  }
+
+  function skewAngle(c) {
+    var w = c.width, h = c.height;
+    var d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
+    var xs = [], ys = [], step = Math.max(1, Math.floor(Math.sqrt(w * h / 60000)));
+    for (var y = 0; y < h; y += step) for (var x = 0; x < w; x += step) {
+      var i = (y * w + x) * 4;
+      if (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2] < 150) { xs.push(x); ys.push(y); }
+    }
+    if (xs.length < 300) return 0;
+    /* Lebar keranjang = jarak sampel, supaya kisi sampel tidak membuat sudut 0 selalu menang. */
+    var nb = Math.ceil(Math.hypot(w, h) / step) + 4, bins = new Float64Array(nb);
+    function score(a) {
+      bins.fill(0);
+      var sn = Math.sin(a), cs = Math.cos(a), off = nb / 2;
+      for (var k = 0; k < xs.length; k++) {
+        var b = Math.round(((ys[k] - h / 2) * cs - (xs[k] - w / 2) * sn) / step + off);
+        if (b >= 0 && b < nb) bins[b]++;
+      }
+      var s2 = 0;
+      for (var q = 0; q < nb; q++) s2 += bins[q] * bins[q];
+      return s2;
+    }
+    var deg = Math.PI / 180, best = 0, bs = score(0), zero = bs;
+    for (var a = -8; a <= 8.001; a += 0.25) { var sc = score(a * deg); if (sc > bs) { bs = sc; best = a; } }
+    for (var a2 = best - 0.25; a2 <= best + 0.25; a2 += 0.05) { var sc2 = score(a2 * deg); if (sc2 > bs) { bs = sc2; best = a2; } }
+    /* Abaikan sudut sangat kecil atau peningkatan yang tidak meyakinkan. */
+    if (Math.abs(best) < 0.3 || bs < zero * 1.06) return 0;
+    return best * deg;
+  }
+  async function needsDeskew(raw, d) {
+    if (!d) return false;
+    if (d.kind === 'image') return true;
+    if (!raw.page) return false;
+    try { var tc = await raw.page.getTextContent(); return tc.items.filter(function (t) { return t.str && t.str.trim(); }).length < 5; }
+    catch (e) { return true; }
+  }
+  async function getSourceFor(n, forceSample, d) {
+    var raw = await rawSourceFor(n, forceSample, d);
+    if (forceSample || !d || !$('deskew').checked) return raw;
+    var key = d.key + ':' + n;
+    var a = SKEW.get(key);
+    if (a === undefined) {
+      a = 0;
+      try {
+        if (await needsDeskew(raw, d)) {
+          var k = 1000 / Math.max(raw.w, raw.h);
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(raw.w * k)); c.height = Math.max(1, Math.round(raw.h * k));
+          var x = c.getContext('2d', { willReadFrequently: true });
+          x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+          await raw.draw(x, 0, 0, raw.w, raw.h, c.width, c.height);
+          a = skewAngle(c);
+        }
+      } catch (e) { a = 0; }
+      SKEW.set(key, a);
+    }
+    if (!a) return raw;
+    return {
+      w: raw.w, h: raw.h, angle: a,
+      draw: async function (ctx, sx, sy, sw, sh, dw, dh) {
+        var k = Math.min(dw / sw, dh / sh);
+        var lim = Math.sqrt(24e6 / (raw.w * raw.h));
+        var kr = Math.min(k, lim);
+        var fw = Math.max(1, Math.round(raw.w * kr)), fh = Math.max(1, Math.round(raw.h * kr));
+        var t = document.createElement('canvas'); t.width = fw; t.height = fh;
+        var tx = t.getContext('2d');
+        tx.fillStyle = '#fff'; tx.fillRect(0, 0, fw, fh);
+        await raw.draw(tx, 0, 0, raw.w, raw.h, fw, fh);
+        ctx.save();
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, dw, dh);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.scale(dw / sw, dh / sh);
+        ctx.translate(-sx + raw.w / 2, -sy + raw.h / 2);
+        ctx.rotate(-a);
+        ctx.drawImage(t, -raw.w / 2, -raw.h / 2, raw.w, raw.h);
+        ctx.restore();
+      }
+    };
+  }
+
+  /* ---------- Mendeteksi dan memisahkan resi ---------- */
+  async function getMask(n, d) {
+    var k = (d ? d.key : 'sample') + ':' + n;
+    if (S.masks.has(k)) return S.masks.get(k);
+    var src = await getSourceFor(n, false, d);
+    var sc = 1100 / Math.max(src.w, src.h);
+    var pw = Math.max(1, Math.round(src.w * sc));
+    var ph = Math.max(1, Math.round(src.h * sc));
+    var c = document.createElement('canvas');
+    c.width = pw; c.height = ph;
+    var x = c.getContext('2d', { willReadFrequently: true });
+    x.fillStyle = '#fff'; x.fillRect(0, 0, pw, ph);
+    await src.draw(x, 0, 0, src.w, src.h, pw, ph);
+    var d = x.getImageData(0, 0, pw, ph).data;
+    var dark = new Uint8Array(pw * ph);
+    for (var i = 0, p = 0; i < d.length; i += 4, p++) {
+      if (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2] < 225) dark[p] = 1;
+    }
+    var m = { pw: pw, ph: ph, sc: sc, w: src.w, h: src.h, dark: dark };
+    S.masks.set(k, m);
+    return m;
+  }
+
+  function bboxIn(m, x0, y0, x1, y1) {
+    var bx0 = x1, by0 = y1, bx1 = -1, by1 = -1;
+    for (var y = y0; y < y1; y++) {
+      var row = y * m.pw;
+      for (var x = x0; x < x1; x++) {
+        if (m.dark[row + x]) {
+          if (x < bx0) bx0 = x;
+          if (x > bx1) bx1 = x;
+          if (y < by0) by0 = y;
+          if (y > by1) by1 = y;
+        }
+      }
+    }
+    if (bx1 < 0) return null;
+    return { x0: bx0, y0: by0, x1: bx1 + 1, y1: by1 + 1 };
+  }
+
+  function toSrc(m, bb, pad) {
+    var p = pad ? Math.max(2, 0.012 * Math.max(m.w, m.h)) : 0;
+    var x = Math.max(0, bb.x0 / m.sc - p), y = Math.max(0, bb.y0 / m.sc - p);
+    var x2 = Math.min(m.w, bb.x1 / m.sc + p), y2 = Math.min(m.h, bb.y1 / m.sc + p);
+    return { x: x, y: y, w: x2 - x, h: y2 - y };
+  }
+
+  function runs(p, minGap) {
+    var out = [], s = -1, last = -1;
+    for (var i = 0; i < p.length; i++) {
+      if (p[i]) {
+        if (s < 0) s = i;
+        else if (i - last - 1 >= minGap) { out.push([s, last + 1]); s = i; }
+        last = i;
+      }
+    }
+    if (s >= 0) out.push([s, last + 1]);
+    return out;
+  }
+
+  function autoRegions(m) {
+    var gy = Math.max(4, Math.round(0.03 * m.ph)), gx = Math.max(4, Math.round(0.03 * m.pw));
+    var rowp = new Uint8Array(m.ph), y, x;
+    for (y = 0; y < m.ph; y++) {
+      var row = y * m.pw;
+      for (x = 0; x < m.pw; x++) { if (m.dark[row + x]) { rowp[y] = 1; break; } }
+    }
+    var out = [];
+    runs(rowp, gy).forEach(function (b) {
+      var colp = new Uint8Array(m.pw);
+      for (y = b[0]; y < b[1]; y++) {
+        var r = y * m.pw;
+        for (x = 0; x < m.pw; x++) { if (m.dark[r + x]) colp[x] = 1; }
+      }
+      runs(colp, gx).forEach(function (c) { out.push([c[0], b[0], c[1], b[1]]); });
+    });
+    var minArea = 0.02 * m.pw * m.ph;
+    return out.filter(function (r) { return (r[2] - r[0]) * (r[3] - r[1]) >= minArea; });
+  }
+
+  function gridRegions(m, mode) {
+    var hw = Math.floor(m.pw / 2), hh = Math.floor(m.ph / 2);
+    if (mode === 'c2') return [[0, 0, hw, m.ph], [hw, 0, m.pw, m.ph]];
+    if (mode === 'r2') return [[0, 0, m.pw, hh], [0, hh, m.pw, m.ph]];
+    return [[0, 0, hw, hh], [hw, 0, m.pw, hh], [0, hh, hw, m.ph], [hw, hh, m.pw, m.ph]];
+  }
+
+  async function buildItems() {
+    var id = ++itemsId;
+    var mode = $('split').value;
+    var trim = $('trim').checked;
+    var items = [];
+    var docs = S.kind === 'docs' ? S.docs : [null];
+    var total = 0;
+    docs.forEach(function (d) { total += d ? d.pages : 1; });
+    var done = 0;
+    for (var di = 0; di < docs.length; di++) {
+      var d = docs[di];
+      var pages = d ? d.pages : 1;
+      for (var n = 1; n <= pages; n++) {
+        done++;
+        if (mode === '1') { items.push({ d: d, n: n, box: null }); continue; }
+        if (total > 1) setStatus('Memisahkan resi, halaman ' + done + ' dari ' + total + '…');
+        var m = await getMask(n, d);
+        if (id !== itemsId) return;
+        var regs = mode === 'auto' ? autoRegions(m) : gridRegions(m, mode);
+        var before = items.length;
+        regs.forEach(function (r) {
+          if (trim) {
+            var bb = bboxIn(m, r[0], r[1], r[2], r[3]);
+            if (bb) items.push({ d: d, n: n, box: toSrc(m, bb, true) });
+          } else {
+            items.push({ d: d, n: n, box: toSrc(m, { x0: r[0], y0: r[1], x1: r[2], y1: r[3] }, false) });
+          }
+        });
+        if (items.length === before) items.push({ d: d, n: n, box: null });
+      }
+    }
+    if (!items.length) items.push({ d: null, n: 1, box: null });
+    if (mode !== '1' && total > 1) setStatus('');
+    if (id !== itemsId) return;
+    S.base = items;
+    S.idx = clamp(S.idx, 0, items.length - 1);
+    await applySort();
+  }
+
+  /* ---------- Urutan resi (kurir / produk) ---------- */
+  var COURIERS = [
+    ['SPX Express', /spx|shopee\s*express/i], ['J&T', /j\s?&\s?t|\bjnt\b/i], ['JNE', /\bjne\b/i], ['SiCepat', /si\s?cepat/i],
+    ['AnterAja', /anter\s?aja/i], ['Ninja Xpress', /ninja/i], ['ID Express', /id\s?express/i], ['Lion Parcel', /lion\s*parcel/i],
+    ['Pos Indonesia', /pos\s*indonesia|\bpos\b/i], ['GoSend', /go\s?send|gojek/i], ['Grab', /grab/i], ['Tiki', /\btiki\b/i],
+    ['Wahana', /wahana/i], ['SAP', /\bsap\b/i]
+  ];
+  function detectCourier(t) {
+    for (var i = 0; i < COURIERS.length; i++) if (COURIERS[i][1].test(t)) return COURIERS[i][0];
+    return '';
+  }
+  function detectProduct(t) {
+    var m = t.match(/nama\s*produk[^A-Za-z0-9]*(.{3,90})/i);
+    if (!m) return '';
+    var x = m[1].replace(/^(variasi|sku|qty|jumlah|berat|nama)\b[\s:.-]*/i, '').replace(/^(variasi|sku|qty|jumlah)\b[\s:.-]*/i, '');
+    return x.trim().slice(0, 40).toLowerCase();
+  }
+  async function itemInfo(it) {
+    if (it.info) return it.info;
+    var info = { courier: '', product: '', resi: it.d ? '' : 'SPXID0000000000' };
+    if (it.d && it.d.kind === 'pdf') {
+      try {
+        var page = await it.d.pdf.getPage(it.n);
+        var vp = page.getViewport({ scale: 1 });
+        var tc = await page.getTextContent();
+        var b = it.box || { x: 0, y: 0, w: vp.width, h: vp.height };
+        var arr = [];
+        tc.items.forEach(function (t) {
+          if (!t.str || !t.str.trim()) return;
+          var pt = vp.convertToViewportPoint(t.transform[4], t.transform[5]);
+          if (pt[0] >= b.x - 2 && pt[0] <= b.x + b.w + 2 && pt[1] >= b.y - 2 && pt[1] <= b.y + b.h + 2) arr.push({ s: t.str.trim(), x: pt[0], y: pt[1] });
+        });
+        arr.sort(function (a, c) { return Math.abs(a.y - c.y) > 3 ? a.y - c.y : a.x - c.x; });
+        var txt = arr.map(function (a) { return a.s; }).join(' ');
+        info.courier = detectCourier(txt);
+        info.product = detectProduct(txt);
+        info.resi = detectResi(txt);
+      } catch (e) { /* teks tidak terbaca */ }
+    }
+    it.info = info;
+    return info;
+  }
+  async function applySort() {
+    var id = ++sortId;
+    var mode = $('sort').value;
+    var list = S.base.slice();
+    var note = '';
+    if (mode !== 'asli' && list.length > 1) {
+      setStatus('Membaca teks resi…');
+      for (var i = 0; i < list.length; i++) {
+        await itemInfo(list[i]);
+        if (id !== sortId) return;
+      }
+      var key = mode === 'kurir' ? 'courier' : 'product';
+      var found = list.filter(function (it) { return it.info[key]; }).length;
+      list.sort(function (a, b) {
+        var x = a.info[key], y = b.info[key];
+        if (!x && !y) return 0;
+        if (!x) return 1;
+        if (!y) return -1;
+        return x.localeCompare(y, 'id');
+      });
+      note = found === 0 ? 'Teks tidak terbaca di file ini, jadi urutan tidak berubah. Foto dan PDF hasil scan tidak bisa diurutkan.'
+        : found < list.length ? found + ' dari ' + list.length + ' resi terbaca. Sisanya diletakkan di akhir.' : 'Semua resi terbaca dan diurutkan.';
+      setStatus('');
+    }
+    if (id !== sortId) return;
+    $('sort-note').textContent = note;
+    S.items = list;
+    S.idx = clamp(S.idx, 0, list.length - 1);
+    updatePager();
+    schedule();
+    prepareExtra();
+  }
+
+
+  /* ---------- Barcode dan nomor resi tambahan ---------- */
+  var C128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(' ');
+  function code128Runs(text) {
+    var vals = [], i, allDigits = /^\d+$/.test(text) && text.length >= 4 && text.length % 2 === 0;
+    if (allDigits) {
+      vals.push(105);
+      for (i = 0; i < text.length; i += 2) vals.push(parseInt(text.substr(i, 2), 10));
+    } else {
+      vals.push(104);
+      for (i = 0; i < text.length; i++) {
+        var cc = text.charCodeAt(i);
+        if (cc < 32 || cc > 126) cc = 63;
+        vals.push(cc - 32);
+      }
+    }
+    var sum = vals[0];
+    for (i = 1; i < vals.length; i++) sum += vals[i] * i;
+    vals.push(sum % 103);
+    vals.push(106);
+    var runs = [];
+    vals.forEach(function (v) { C128[v].split('').forEach(function (d) { runs.push(+d); }); });
+    return runs;
+  }
+  function detectResi(t) {
+    var m = t.match(/no\.?\s*resi\s*:?\s*([A-Z0-9]{8,24})/i);
+    if (m) return m[1].toUpperCase();
+    m = t.match(/\b(SPX[A-Z]{0,2}\d{8,}[A-Z]?)\b/i);
+    if (m) return m[1].toUpperCase();
+    m = t.match(/\b((?:JP|JX|JT|JD|JO)\d{9,})\b/i);
+    if (m) return m[1].toUpperCase();
+    return '';
+  }
+  function resiOf(it) { return it.resiManual != null ? it.resiManual : (it.info ? it.info.resi || '' : ''); }
+  function refreshResiField() {
+    var it = S.items[S.idx];
+    if (!it) return;
+    var el = $('resino');
+    if (document.activeElement !== el) el.value = resiOf(it);
+    $('resino-note').textContent = $('extra').checked && !resiOf(it) ? 'Nomor resi tidak terbaca otomatis. Ketik manual di kolom ini.' : '';
+  }
+  async function prepareExtra() {
+    if (!$('extra').checked) { refreshResiField(); return; }
+    var list = S.items.slice();
+    for (var i = 0; i < list.length; i++) await itemInfo(list[i]);
+    refreshResiField();
+    schedule();
+  }
+  /* Menggambar blok barcode dan nomor di (cx, y) dengan lebar maksimum areaW. Mengembalikan tinggi yang dipakai. */
+  function drawExtra(ctx, o, num, cx, y, areaW) {
+    var yy = y;
+    if (o.exBar) {
+      var runs = code128Runs(num), mods = 0;
+      runs.forEach(function (r) { mods += r; });
+      var quiet = 10;
+      var mw = Math.max(1, Math.min(3, Math.floor(areaW / (mods + 2 * quiet))));
+      var bw = mods * mw, bh = Math.max(20, Math.round(o.px(o.exh)));
+      var x0 = Math.round(cx - bw / 2);
+      ctx.fillStyle = '#000';
+      var xx = x0;
+      for (var i = 0; i < runs.length; i++) {
+        if (i % 2 === 0) ctx.fillRect(xx, yy, runs[i] * mw, bh);
+        xx += runs[i] * mw;
+      }
+      yy += bh;
+    }
+    if (o.exNum) {
+      yy += o.exBar ? Math.round(o.px(0.8)) : 0;
+      var fs = Math.round(o.px(4));
+      ctx.fillStyle = '#000'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      var fam = '"IBM Plex Mono", ui-monospace, Menlo, "DejaVu Sans Mono", monospace';
+      ctx.font = '600 ' + fs + 'px ' + fam;
+      while (fs > 12 && ctx.measureText(num).width > areaW) { fs -= 1; ctx.font = '600 ' + fs + 'px ' + fam; }
+      ctx.fillText(num, Math.round(cx), yy);
+      yy += fs + Math.round(o.px(0.4));
+    }
+    return yy - y;
+  }
+  function extraHeight(o) {
+    var h = 0;
+    if (o.exBar) h += Math.max(20, Math.round(o.px(o.exh)));
+    if (o.exNum) h += (o.exBar ? Math.round(o.px(0.8)) : 0) + Math.round(o.px(4)) + Math.round(o.px(0.4));
+    return h;
+  }
+
+  /* ---------- Render ---------- */
+  function opts() {
+    var lw, lh, pw, dpi, a;
+    var sz = $('size').value;
+    if (sz === 'manual') { lw = +$('lw').value; lh = +$('lh').value; }
+    else { a = sz.split('x'); lw = +a[0]; lh = +a[1]; }
+    var pr = $('printer').value;
+    if (pr === 'manual') { pw = +$('pw').value; dpi = +$('dpi').value; }
+    else { a = pr.split('x'); pw = +a[0]; dpi = +a[1]; }
+    lw = clamp(lw || 78, 20, 210);
+    lh = clamp(lh || 100, 20, 400);
+    pw = clamp(pw || 78, 20, 210);
+    dpi = dpi || 203;
+    var px = function (v) { return v / 25.4 * dpi; };
+    return {
+      lw: lw, lh: lh, pw: Math.min(pw, lw), dpi: dpi, px: px,
+      W: Math.round(px(lw)), H: Math.round(px(lh)),
+      margin: +$('margin').value,
+      hmargin: +$('hmargin').value, shx: +$('shx').value, shy: +$('shy').value,
+      th: 70 + (+$('thick').value) * 1.2,
+      trim: $('trim').checked,
+      rotate: $('rotate').checked,
+      sharp: $('sharp').checked,
+      extra: $('extra').checked && ($('ex-bar').checked || $('ex-num').checked),
+      exPos: $('expos').value, exBar: $('ex-bar').checked, exNum: $('ex-num').checked, exh: +$('exh').value,
+      fill: $('fill').checked
+    };
+  }
+
+  /* ---------- Edit resi: tutup bagian dan potong tepi ----------
+     Edit disimpan sebagai pecahan (0–1) dari kotak dasar resi, jadi satu edit
+     bisa dipakai untuk semua resi yang tata letaknya sama. */
+  async function baseBoxOf(item, src, o) {
+    var box = item.box;
+    if (!box) {
+      box = { x: 0, y: 0, w: src.w, h: src.h };
+      if (o.trim && !item.sample) {
+        var m = await getMask(item.n, item.d);
+        var bb = bboxIn(m, 0, 0, m.pw, m.ph);
+        if (bb) box = toSrc(m, bb, true);
+      } else if (o.trim && item.sample) {
+        var m2 = await getMask(item.n, null);
+        var bb2 = bboxIn(m2, 0, 0, m2.pw, m2.ph);
+        if (bb2) box = toSrc(m2, bb2, true);
+      }
+    }
+    return box;
+  }
+  function editOf(item) {
+    if (!item || item.sample) return null;
+    var e = item.edit !== undefined ? item.edit : S.editAll;
+    if (!e || (!e.crop && !(e.hides && e.hides.length))) return null;
+    return e;
+  }
+  function fracToSrc(base, r) { return { x: base.x + r.x * base.w, y: base.y + r.y * base.h, w: r.w * base.w, h: r.h * base.h }; }
+  async function trimHidden(src, box, hides) {
+    var k = 900 / Math.max(box.w, box.h);
+    var cw = Math.max(1, Math.round(box.w * k)), ch = Math.max(1, Math.round(box.h * k));
+    var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    var x = c.getContext('2d', { willReadFrequently: true });
+    x.fillStyle = '#fff'; x.fillRect(0, 0, cw, ch);
+    await src.draw(x, box.x, box.y, box.w, box.h, cw, ch);
+    x.fillStyle = '#fff';
+    hides.forEach(function (h) { x.fillRect((h.x - box.x) * k - 1, (h.y - box.y) * k - 1, h.w * k + 2, h.h * k + 2); });
+    var d = x.getImageData(0, 0, cw, ch).data;
+    var x0 = cw, y0 = ch, x1 = -1, y1 = -1;
+    for (var yy = 0; yy < ch; yy++) for (var xx = 0; xx < cw; xx++) {
+      var i = (yy * cw + xx) * 4;
+      if (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2] < 225) {
+        if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy;
+      }
+    }
+    if (x1 < 0) return null;
+    var pad = Math.max(2, 0.012 * Math.max(box.w, box.h));
+    var nx = Math.max(box.x, box.x + x0 / k - pad), ny = Math.max(box.y, box.y + y0 / k - pad);
+    var nx2 = Math.min(box.x + box.w, box.x + (x1 + 1) / k + pad), ny2 = Math.min(box.y + box.h, box.y + (y1 + 1) / k + pad);
+    return { x: nx, y: ny, w: nx2 - nx, h: ny2 - ny };
+  }
+
+  /* Pola posisi: garis tengah, tepi area cetak dan penggaris mm dari tengah.
+     Dari hasil cetaknya terlihat berapa mm cetakan bergeser. */
+  function renderCalib(o) {
+    var W = o.W, H = o.H, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var x = c.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+    x.fillStyle = '#000'; x.strokeStyle = '#000';
+    var mm = o.px(1), cx = Math.round(W / 2 + o.px(o.shx)), cy = Math.round(H / 2 + o.px(o.shy));
+    var lw = Math.max(2, Math.round(mm * 0.3));
+    /* Garis tengah tegak dan mendatar */
+    x.fillRect(cx - lw, 0, lw * 2, H);
+    x.fillRect(0, cy - lw / 2, W, lw);
+    /* Bingkai area cetak (lebar printer, dikurangi pinggir) */
+    var aw = o.px(o.pw) - 2 * o.px(o.hmargin);
+    x.lineWidth = lw;
+    x.setLineDash([mm * 2, mm * 1.5]);
+    x.strokeRect(Math.round(cx - aw / 2) + lw / 2, Math.round(o.px(o.margin)) + lw / 2, Math.round(aw) - lw, Math.round(H - 2 * o.px(o.margin)) - lw);
+    x.setLineDash([]);
+    /* Penggaris mm dari tengah, di atas dan di bawah */
+    var fs = Math.max(14, Math.round(mm * 2.6));
+    x.font = '700 ' + fs + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'top';
+    [Math.round(mm * 6), Math.round(H - mm * 6 - mm * 6)].forEach(function (y0) {
+      for (var k = -60; k <= 60; k++) {
+        var px = Math.round(cx + k * mm);
+        if (px < 0 || px >= W) continue;
+        var tall = k % 5 === 0 ? mm * 3.2 : mm * 1.6;
+        x.fillRect(px - 1, y0, Math.max(2, Math.round(lw * 0.7)), tall);
+        if (k % 10 === 0 && k !== 0) x.fillText(String(Math.abs(k)), px, y0 + mm * 3.4);
+      }
+    });
+    /* Petunjuk singkat di tengah */
+    x.textBaseline = 'middle';
+    var lines = UI_LANG === 'en'
+      ? ['POSITION PATTERN', 'The thick line should be in the', 'middle of the paper. Read the ruler', 'at both paper edges: if the left', 'edge shows 36 and the right 40,', 'shift 2 mm to the right.']
+      : ['POLA POSISI', 'Garis tebal harus di tengah', 'kertas. Baca angka penggaris di', 'kedua tepi kertas: kalau kiri 36', 'dan kanan 40, geser 2 mm', 'ke kanan.'];
+    var bw = Math.min(W - mm * 8, mm * 56), lh2 = fs * 1.35, bh = lh2 * lines.length + mm * 4;
+    var by = Math.round(cy - bh - mm * 4);
+    if (by < mm * 16) by = Math.round(cy + mm * 4);
+    x.fillStyle = '#fff'; x.fillRect(Math.round(W / 2 - bw / 2), by, Math.round(bw), Math.round(bh));
+    x.strokeRect(Math.round(W / 2 - bw / 2), by, Math.round(bw), Math.round(bh));
+    x.fillStyle = '#000';
+    lines.forEach(function (t, i) {
+      x.font = (i === 0 ? '800 ' : '600 ') + Math.round(fs * (i === 0 ? 1.05 : 0.9)) + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
+      x.fillText(t, W / 2, by + mm * 2 + lh2 * (i + 0.5));
+    });
+    var info = fmt(o.lw) + ' × ' + fmt(o.lh) + ' mm · ' + o.dpi + ' dpi · ' + (UI_LANG === 'en' ? 'shift ' : 'geser ') + fmt(o.shx) + ' mm';
+    x.font = '600 ' + Math.round(fs * 0.8) + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
+    var iy = Math.round(cy + mm * 8 + (by > cy ? bh + mm * 4 : 0)), iw = x.measureText(info).width + mm * 3;
+    x.fillStyle = '#fff'; x.fillRect(Math.round(W / 2 - iw / 2), Math.round(iy - fs * 0.6), Math.round(iw), Math.round(fs * 1.2));
+    x.fillStyle = '#000';
+    x.fillText(info, W / 2, iy);
+    return c;
+  }
+
+  async function render(item, o) {
+    if (item.calib) return renderCalib(o);
+    var src = await getSourceFor(item.n, item.sample, item.d);
+    var box = await baseBoxOf(item, src, o);
+    var hides = [];
+    var ed = editOf(item);
+    if (ed) {
+      var base = box;
+      if (ed.crop) box = fracToSrc(base, ed.crop);
+      hides = (ed.hides || []).map(function (r) { return fracToSrc(base, r); });
+      if (hides.length && o.trim) box = (await trimHidden(src, box, hides)) || box;
+    }
+    var W = o.W, H = o.H;
+    var areaW = Math.max(1, Math.round(o.px(o.pw) - 2 * o.px(o.hmargin)));
+    var offX = Math.round(o.px(o.shx)), offY = Math.round(o.px(o.shy));
+    var mg = Math.round(o.px(o.margin));
+    var num = '';
+    if (o.extra) { num = resiOf(item); if (item.resiManual == null) { await itemInfo(item); num = resiOf(item); } }
+    var exOn = o.extra && !!num;
+    var exH = exOn ? extraHeight(o) : 0, exGap = exOn ? Math.round(o.px(1.5)) : 0;
+    var availH = Math.max(1, H - 2 * mg - exH - exGap);
+    var s = Math.min(areaW / box.w, availH / box.h);
+    var rot = false, usedH = 0, topShift = (exOn && o.exPos === 'top') ? exH + exGap : 0;
+    if (o.rotate) {
+      var s2 = Math.min(areaW / box.h, availH / box.w);
+      if (s2 > s * 1.15) { rot = true; s = s2; }
+    }
+    var dw = Math.max(1, Math.round(box.w * s));
+    var dh = Math.max(1, Math.round(box.h * s));
+    var t = document.createElement('canvas');
+    t.width = dw; t.height = dh;
+    var tx = t.getContext('2d');
+    tx.fillStyle = '#fff'; tx.fillRect(0, 0, dw, dh);
+    await src.draw(tx, box.x, box.y, box.w, box.h, dw, dh);
+    if (hides.length) {
+      var kx = dw / box.w, ky = dh / box.h;
+      tx.fillStyle = '#fff';
+      hides.forEach(function (h) { tx.fillRect(Math.floor((h.x - box.x) * kx) - 1, Math.floor((h.y - box.y) * ky) - 1, Math.ceil(h.w * kx) + 2, Math.ceil(h.h * ky) + 2); });
+    }
+    var out = document.createElement('canvas');
+    out.width = W; out.height = H;
+    var ox = out.getContext('2d', { willReadFrequently: true });
+    ox.fillStyle = '#fff'; ox.fillRect(0, 0, W, H);
+    if (rot) {
+      ox.save();
+      ox.translate(Math.round(W / 2) + offX, mg + offY + topShift + Math.round(dw / 2));
+      ox.rotate(Math.PI / 2);
+      ox.drawImage(t, -Math.round(dw / 2), -Math.round(dh / 2));
+      ox.restore();
+      usedH = dw;
+    } else {
+      var dh2 = dh;
+      if (o.fill) dh2 = Math.max(dh, Math.min(Math.round(dh * 1.25), availH));
+      ox.imageSmoothingEnabled = true; ox.imageSmoothingQuality = 'high';
+      ox.drawImage(t, Math.round((W - dw) / 2) + offX, mg + offY + topShift, dw, dh2);
+      usedH = dh2;
+    }
+    if (exOn) drawExtra(ox, o, num, Math.round(W / 2) + offX, o.exPos === 'top' ? mg + offY : mg + offY + usedH + exGap, areaW);
+    var im = ox.getImageData(0, 0, W, H);
+    var d = im.data;
+    var n = W * H, lum = new Float32Array(n), i, x, y;
+    for (i = 0; i < n; i++) lum[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+    if (o.sharp) {
+      /* Unsharp mask: tebalkan goresan tipis (huruf kecil, nomor resi) sebelum jadi hitam-putih. */
+      var tmp = new Float32Array(n), blur = new Float32Array(n);
+      for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+        var a = lum[y * W + (x > 0 ? x - 1 : x)], b = lum[y * W + x], c = lum[y * W + (x < W - 1 ? x + 1 : x)];
+        tmp[y * W + x] = (a + b + c) / 3;
+      }
+      for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+        var a2 = tmp[(y > 0 ? y - 1 : y) * W + x], b2 = tmp[y * W + x], c2 = tmp[(y < H - 1 ? y + 1 : y) * W + x];
+        blur[y * W + x] = (a2 + b2 + c2) / 3;
+      }
+      for (i = 0; i < n; i++) lum[i] = lum[i] + 1.6 * (lum[i] - blur[i]);
+    }
+    for (i = 0; i < n; i++) {
+      var v = lum[i] < o.th ? 0 : 255;
+      d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = v;
+      d[i * 4 + 3] = 255;
+    }
+    ox.putImageData(im, 0, 0);
+    return out;
+  }
+
+  /* ---------- Perintah printer ---------- */
+  function packBitmap(c, blackIsOne) {
+    var W = c.width, H = c.height, wb = Math.ceil(W / 8);
+    var d = c.getContext('2d').getImageData(0, 0, W, H).data;
+    var out = new Uint8Array(wb * H);
+    if (!blackIsOne) out.fill(0xFF);
+    for (var y = 0; y < H; y++) {
+      for (var x = 0; x < W; x++) {
+        if (d[(y * W + x) * 4] < 128) {
+          var idx = y * wb + (x >> 3), bit = 0x80 >> (x & 7);
+          if (blackIsOne) out[idx] |= bit; else out[idx] &= ~bit;
+        }
+      }
+    }
+    return { data: out, wb: wb, h: H, w: W };
+  }
+
+  function concat(parts) {
+    var n = 0, i;
+    for (i = 0; i < parts.length; i++) n += parts[i].length;
+    var r = new Uint8Array(n), p = 0;
+    for (i = 0; i < parts.length; i++) { r.set(parts[i], p); p += parts[i].length; }
+    return r;
+  }
+
+  var HEX = (function () { var a = []; for (var i = 0; i < 256; i++) a.push((i < 16 ? '0' : '') + i.toString(16).toUpperCase()); return a; })();
+
+  /* Printer struk (ESC/POS) dan CPCL mulai mencetak dari ujung kiri kepala cetak dan
+     memotong atau membungkus gambar yang lebih lebar dari kepala cetak. Kalau gambar
+     selebar kertas dikirim utuh, hasilnya terlihat bergeser ke kanan. Jadi kirim hanya
+     bagian tengah selebar area cetak. */
+  function headCrop(c, o) {
+    var hw = Math.floor(Math.round(o.px(o.pw)) / 8) * 8;
+    if (!hw || hw >= c.width) return c;
+    var x0 = Math.round((c.width - hw) / 2);
+    var t = document.createElement('canvas');
+    t.width = hw; t.height = c.height;
+    var tx = t.getContext('2d');
+    tx.fillStyle = '#fff'; tx.fillRect(0, 0, hw, c.height);
+    tx.drawImage(c, -x0, 0);
+    return t;
+  }
+  function buildJob(c, o) {
+    var enc = new TextEncoder();
+    var lang = $('lang').value;
+    if (lang === 'escpos' || lang === 'cpcl') c = headCrop(c, o);
+    var copies = clamp(Math.round(+$('copies').value || 1), 1, 20);
+    var inv = $('invert').checked;
+    var bm, dens = clamp(Math.round(+$('dens').value), 0, 15);
+
+    if (lang === 'cpcl') {
+      bm = packBitmap(c, !inv);
+      return concat([enc.encode('! 0 200 200 ' + bm.h + ' ' + copies + '\r\nPAGE-WIDTH ' + bm.w + '\r\nCG ' + bm.wb + ' ' + bm.h + ' 0 0 '),
+        bm.data, enc.encode('\r\nFORM\r\nPRINT\r\n')]);
+    }
+    if (lang === 'escpos') {
+      bm = packBitmap(c, !inv);
+      var one = [new Uint8Array([0x1B, 0x40])];
+      var band = 96;
+      for (var y0 = 0; y0 < bm.h; y0 += band) {
+        var h = Math.min(band, bm.h - y0);
+        one.push(new Uint8Array([0x1D, 0x76, 0x30, 0x00, bm.wb & 255, bm.wb >> 8, h & 255, h >> 8]));
+        one.push(bm.data.slice(y0 * bm.wb, (y0 + h) * bm.wb));
+      }
+      one.push(new Uint8Array([0x1B, 0x64, 0x03]));
+      var all = [];
+      for (var k = 0; k < copies; k++) all = all.concat(one);
+      return concat(all);
+    }
+    if (lang === 'zpl') {
+      bm = packBitmap(c, !inv);
+      var hex = new Array(bm.data.length);
+      for (var i = 0; i < bm.data.length; i++) hex[i] = HEX[bm.data[i]];
+      var total = bm.data.length;
+      var z = '~SD' + (dens * 2) + '\r\n^XA\r\n^PW' + bm.w + '\r\n^LL' + bm.h + '\r\n^LH0,0\r\n^FO0,0^GFA,' + total + ',' + total + ',' + bm.wb + ',' + hex.join('') + '^FS\r\n^PQ' + copies + '\r\n^XZ\r\n';
+      return enc.encode(z);
+    }
+    bm = packBitmap(c, inv);
+    var gap = clamp(+$('gap').value || 0, 0, 10);
+    var head = 'SIZE ' + o.lw + ' mm,' + o.lh + ' mm\r\n' +
+      'GAP ' + gap + ' mm,0 mm\r\n' +
+      'DENSITY ' + dens + '\r\n' +
+      'DIRECTION 0\r\nREFERENCE 0,0\r\nCLS\r\n' +
+      'BITMAP 0,0,' + bm.wb + ',' + bm.h + ',0,';
+    return concat([enc.encode(head), bm.data, enc.encode('\r\nPRINT ' + copies + ',1\r\n')]);
+  }
+
+  /* ---------- Bluetooth ---------- */
+  function connected() { return !!(P.dev && P.dev.gatt && P.dev.gatt.connected && P.ch); }
+
+  function refreshButtons() {
+    var ok = connected() && !P.busy;
+    $('print').disabled = !ok;
+    $('print-all').disabled = !ok;
+    $('print-test').disabled = !ok;
+    $('calib').disabled = !ok;
+    $('connect').disabled = P.busy || !navigator.bluetooth;
+    $('reconnect').disabled = P.busy;
+  }
+
+  function setChip(on, text) {
+    $('chip').className = 'chip' + (on ? ' on' : '');
+    $('chip-t').textContent = text;
+    $('connect').textContent = on ? 'Ganti printer' : 'Sambung printer';
+    $('connect').className = on ? 'btn' : 'btn primary';
+    if (on) $('reconnect').hidden = true;
+    refreshButtons();
+  }
+
+  function propsOf(ch) {
+    var p = ch.properties, a = [];
+    if (p.writeWithoutResponse) a.push('tanpa balasan');
+    if (p.write) a.push('dengan balasan');
+    return a.join(' + ');
+  }
+
+  async function discover(server) {
+    var services = await server.getPrimaryServices();
+    var found = [];
+    for (var i = 0; i < services.length; i++) {
+      var chars = [];
+      try { chars = await services[i].getCharacteristics(); } catch (e) { log('Layanan ' + services[i].uuid + ' tidak bisa dibaca.'); }
+      for (var j = 0; j < chars.length; j++) {
+        var p = chars[j].properties;
+        if (p.write || p.writeWithoutResponse) found.push({ svc: services[i].uuid, ch: chars[j] });
+      }
+    }
+    return found;
+  }
+
+  function fillChannelSelect() {
+    var sel = $('chsel');
+    sel.innerHTML = '';
+    P.chars.forEach(function (f, i) {
+      var o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = f.ch.uuid.slice(0, 8) + ' · ' + propsOf(f.ch);
+      sel.appendChild(o);
+    });
+    sel.disabled = P.chars.length < 2;
+    if (!P.chars.length) {
+      var o2 = document.createElement('option');
+      o2.textContent = 'Tidak ada saluran tulis';
+      sel.appendChild(o2);
+    }
+  }
+
+  async function connectGatt() {
+    var server = await P.dev.gatt.connect();
+    log('Tersambung ke GATT.');
+    P.chars = await discover(server);
+    log('Saluran tulis ditemukan: ' + P.chars.length);
+    P.chars.forEach(function (f) { log('  ' + f.svc.slice(0, 8) + ' / ' + f.ch.uuid.slice(0, 8) + ' (' + propsOf(f.ch) + ')'); });
+    fillChannelSelect();
+    if (!P.chars.length) throw new Error('Printer tersambung, tetapi tidak ada saluran tulis yang bisa dipakai.');
+    var pick = 0;
+    for (var i = 0; i < P.chars.length; i++) { if (P.chars[i].ch.properties.writeWithoutResponse) { pick = i; break; } }
+    $('chsel').value = String(pick);
+    P.ch = P.chars[pick].ch;
+    try { localStorage.setItem('rapikan-resi-printer', P.dev.name || ''); } catch (e) { /* abaikan */ }
+    setChip(true, P.dev.name || 'Printer');
+  }
+
+  function useDevice(dev) {
+    if (P.dev && P.dev !== dev && P.dev.gatt && P.dev.gatt.connected) { try { P.dev.gatt.disconnect(); } catch (e) { /* abaikan */ } }
+    P.dev = dev;
+    P.ch = null;
+    if (!dev.__bound) {
+      dev.__bound = true;
+      dev.addEventListener('gattserverdisconnected', function () {
+        if (P.dev !== dev) return;
+        P.ch = null;
+        setChip(false, 'Terputus');
+        $('reconnect').hidden = false;
+        $('reconnect').textContent = 'Sambung ulang · ' + (dev.name || 'printer');
+        log('Sambungan terputus.');
+      });
+    }
+  }
+
+  function explain(e) {
+    var name = e && e.name;
+    if (name === 'NotFoundError') return 'Tidak ada printer yang dipilih.';
+    if (name === 'SecurityError' || name === 'NotAllowedError') return 'Izin Bluetooth ditolak. Izinkan Bluetooth dan lokasi untuk Chrome di pengaturan Android.';
+    if (name === 'NetworkError') return 'Printer tidak bisa dijangkau. Pastikan printer menyala, dekat, dan tidak tersambung ke aplikasi lain.';
+    return (e && e.message) ? e.message : 'Gagal menyambung ke printer.';
+  }
+
+  async function connect() {
+    if (!navigator.bluetooth) return;
+    $('connect').disabled = true;
+    setStatus('Mencari printer…');
+    try {
+      var dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: SERVICES });
+      useDevice(dev);
+      log('Perangkat dipilih: ' + (dev.name || '(tanpa nama)'));
+      setStatus('Menyambung ke ' + (dev.name || 'printer') + '…');
+      await connectGatt();
+      setStatus('Tersambung. Siap mencetak.');
+    } catch (e) {
+      setStatus(explain(e), true);
+      log('Galat: ' + (e && e.name ? e.name + ' · ' : '') + (e && e.message ? e.message : ''));
+      setChip(connected(), connected() ? (P.dev.name || 'Printer') : 'Belum tersambung');
+    }
+    refreshButtons();
+  }
+
+  async function reconnect() {
+    if (!P.dev) return;
+    $('reconnect').disabled = true;
+    setStatus('Menyambung ulang…');
+    try {
+      await connectGatt();
+      setStatus('Tersambung. Siap mencetak.');
+    } catch (e) {
+      setStatus(explain(e), true);
+      log('Galat sambung ulang: ' + (e && e.name ? e.name + ' · ' : '') + (e && e.message ? e.message : ''));
+    }
+    refreshButtons();
+  }
+
+  async function restoreDevice() {
+    try {
+      if (!navigator.bluetooth || typeof navigator.bluetooth.getDevices !== 'function') return;
+      var list = await navigator.bluetooth.getDevices();
+      if (!list || !list.length) return;
+      var saved = '';
+      try { saved = localStorage.getItem('rapikan-resi-printer') || ''; } catch (e) { /* abaikan */ }
+      var dev = list.filter(function (d) { return d.name && d.name === saved; })[0] || list[0];
+      useDevice(dev);
+      $('reconnect').hidden = false;
+      $('reconnect').textContent = 'Sambung ulang · ' + (dev.name || 'printer');
+      log('Printer yang pernah dipakai ditemukan: ' + (dev.name || '(tanpa nama)'));
+    } catch (e) { /* fitur ini opsional */ }
+  }
+
+  async function ensureConnected() {
+    if (connected()) return;
+    if (!P.dev) throw new Error('Printer belum disambung.');
+    setStatus('Menyambung ulang…');
+    await connectGatt();
+  }
+
+  async function sendBytes(bytes, onProgress) {
+    var size = +$('chunk').value || 100;
+    var delay = size <= 20 ? 25 : (size <= 100 ? 12 : 8);
+    var ch = P.ch;
+    var noResp = !!ch.properties.writeWithoutResponse && typeof ch.writeValueWithoutResponse === 'function';
+    for (var i = 0; i < bytes.length; i += size) {
+      var part = bytes.slice(i, i + size);
+      if (noResp) await ch.writeValueWithoutResponse(part);
+      else if (typeof ch.writeValueWithResponse === 'function') await ch.writeValueWithResponse(part);
+      else await ch.writeValue(part);
+      await sleep(delay);
+      if (onProgress && (i / size) % 8 === 0) onProgress(Math.min(1, (i + size) / bytes.length));
+    }
+    if (onProgress) onProgress(1);
+  }
+
+  function setBusy(on) { P.busy = on; refreshButtons(); }
+  function progress(f) { $('bar').hidden = false; $('barfill').style.width = Math.round(f * 100) + '%'; }
+
+  async function printList(list, label) {
+    if (P.busy) return;
+    setBusy(true);
+    try {
+      await ensureConnected();
+      var o = opts();
+      for (var k = 0; k < list.length; k++) {
+        setStatus('Menyiapkan ' + label + ' ' + (k + 1) + ' dari ' + list.length + '…');
+        var c = await render(list[k], o);
+        var job = buildJob(c, o);
+        log('Kirim ' + job.length + ' byte (' + $('lang').value.toUpperCase() + ', ' + o.W + '×' + o.H + ' px)');
+        setStatus('Mengirim ' + label + ' ' + (k + 1) + ' dari ' + list.length + '…');
+        progress(0);
+        await sendBytes(job, progress);
+        if (k < list.length - 1) await sleep(700);
+      }
+      setStatus('Terkirim. Printer sedang mencetak.');
+      log('Selesai dikirim.');
+    } catch (e) {
+      setStatus((e && e.message) ? e.message : 'Gagal mengirim ke printer.', true);
+      log('Galat kirim: ' + (e && e.name ? e.name + ' · ' : '') + (e && e.message ? e.message : ''));
+    }
+    setBusy(false);
+    setTimeout(function () { $('bar').hidden = true; }, 1200);
+  }
+
+  async function calibrate() {
+    if (P.busy) return;
+    var lang = $('lang').value;
+    var cmd = lang === 'tspl' ? 'GAPDETECT\r\n' : (lang === 'zpl' ? '~JC\r\n' : null);
+    if (!cmd) { setStatus('Kalibrasi hanya tersedia untuk TSPL dan ZPL.', true); return; }
+    setBusy(true);
+    try {
+      await ensureConnected();
+      await sendBytes(new TextEncoder().encode(cmd));
+      setStatus('Perintah kalibrasi terkirim. Tunggu printer selesai menarik label.');
+      log('Kalibrasi dikirim.');
+    } catch (e) {
+      setStatus((e && e.message) ? e.message : 'Gagal mengirim kalibrasi.', true);
+    }
+    setBusy(false);
+  }
+
+  /* ---------- Pratinjau dan berkas ---------- */
+  function syncLabels() {
+    var o = opts();
+    var thick = +$('thick').value;
+    var lang = $('lang').value;
+    $('v-thick').textContent = thick < 35 ? 'Tipis' : (thick < 65 ? 'Sedang' : 'Tebal');
+    $('v-margin').textContent = fmt(o.margin) + ' mm';
+    $('v-exh').textContent = fmt(o.exh) + ' mm';
+    $('v-hmargin').textContent = fmt(o.hmargin) + ' mm';
+    $('v-shx').textContent = o.shx === 0 ? 'Tengah' : (o.shx > 0 ? 'Kanan ' : 'Kiri ') + fmt(Math.abs(o.shx)) + ' mm';
+    $('v-shy').textContent = o.shy === 0 ? 'Standar' : (o.shy > 0 ? 'Bawah ' : 'Atas ') + fmt(Math.abs(o.shy)) + ' mm';
+    $('v-dens').textContent = $('dens').value;
+    $('size-manual').hidden = $('size').value !== 'manual';
+    $('printer-manual').hidden = $('printer').value !== 'manual';
+    $('gap-wrap').hidden = lang !== 'tspl';
+    $('dens-wrap').hidden = lang !== 'tspl' && lang !== 'zpl';
+    $('fit-note').textContent = o.lw > o.pw + 0.5
+      ? 'Label (' + fmt(o.lw) + ' mm) lebih lebar dari area cetak printer (' + fmt(o.pw) + ' mm), jadi resi dikecilkan agar muat.'
+      : '';
+    markChips('size', 'size-chips');
+    markChips('expos', 'expos-chips');
+    markChips('split', 'split-chips');
+    var szOpt = $('size').options[$('size').selectedIndex];
+    var hint = szOpt && szOpt.value === 'manual' ? 'Isi lebar dan tinggi sendiri dalam milimeter.' : (szOpt && szOpt.text.indexOf('·') > -1 ? szOpt.text.split('·')[1].trim() : '');
+    $('size-hint').textContent = hint ? hint.charAt(0).toUpperCase() + hint.slice(1) : '';
+    $('split-note').textContent = $('split').value === 'auto'
+      ? 'Resi dipisahkan di bagian kosong yang cukup lebar. Jika ada resi yang terbelah, pakai pilihan 2 atau 4 resi.'
+      : '';
+    var pct = ((o.lw - o.pw) / 2 / o.lw) * 100;
+    $('sl').style.width = pct + '%';
+    $('sr').style.width = pct + '%';
+    var lab = document.querySelector('.label');
+    lab.style.setProperty('--lw', o.lw);
+    lab.style.setProperty('--lh', o.lh);
+    $('rh').textContent = fmt(o.lw) + ' mm';
+    $('rv').textContent = fmt(o.lh) + ' mm';
+    $('eyebrow').textContent = 'Label ' + fmt(o.lw) + ' × ' + fmt(o.lh) + ' mm · ' + o.dpi + ' dpi';
+    $('cap').textContent = (S.kind === 'sample' ? 'Contoh · ' : '') + o.W + ' × ' + o.H + ' px · area cetak ' + fmt(o.pw) + ' mm';
+    savePrefs();
+  }
+
+  function loadPrefs() {
+    try {
+      var j = JSON.parse(localStorage.getItem('rapikan-resi-cetak') || '{}');
+      PREF.forEach(function (k) {
+        if (j[k] != null && $(k)) {
+          $(k).value = j[k];
+          if ($(k).selectedIndex === -1) $(k).selectedIndex = 0;
+        }
+      });
+      if (j.trim != null) $('trim').checked = !!j.trim;
+      if (j.invert != null) $('invert').checked = !!j.invert;
+      if (j.rotate != null) $('rotate').checked = !!j.rotate;
+      if (j.sharp != null) $('sharp').checked = !!j.sharp;
+      if (j.fill != null) $('fill').checked = !!j.fill;
+      if (j.extra != null) $('extra').checked = !!j.extra;
+      if (j.exBar != null) $('ex-bar').checked = !!j.exBar;
+      if (j.exNum != null) $('ex-num').checked = !!j.exNum;
+      if (j.tab) savedTab = j.tab;
+    } catch (e) { /* tanpa penyimpanan, pakai bawaan */ }
+  }
+  function savePrefs() {
+    try {
+      var j = {};
+      PREF.forEach(function (k) { j[k] = $(k).value; });
+      j.trim = $('trim').checked;
+      j.invert = $('invert').checked;
+      j.rotate = $('rotate').checked;
+      j.sharp = $('sharp').checked;
+      j.fill = $('fill').checked;
+      j.extra = $('extra').checked;
+      j.exBar = $('ex-bar').checked;
+      j.exNum = $('ex-num').checked;
+      j.tab = S.tab || '';
+      localStorage.setItem('rapikan-resi-cetak', JSON.stringify(j));
+    } catch (e) { /* abaikan */ }
+  }
+
+  function schedule() {
+    syncLabels();
+    clearTimeout(timer);
+    timer = setTimeout(update, 120);
+  }
+
+  async function update() {
+    var id = ++runId;
+    try {
+      var c = await render(S.items[S.idx], opts());
+      if (id !== runId) return;
+      c.toBlob(function (b) {
+        if (id !== runId || !b) return;
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(b);
+        $('pv').src = previewUrl;
+      }, 'image/png');
+    } catch (e) {
+      if (id === runId) setStatus('Gagal memproses file. Coba file lain atau muat ulang halaman.', true);
+    }
+  }
+
+  function updatePager() {
+    var n = S.items.length, it = S.items[S.idx];
+    $('pager').hidden = n < 2;
+    $('pg').textContent = 'Resi ' + (S.idx + 1) + ' / ' + n + (it && it.info && it.info.courier ? ' · ' + it.info.courier : '');
+    $('prev').disabled = S.idx <= 0;
+    $('next').disabled = S.idx >= n - 1;
+    $('print-all').hidden = n < 2;
+    $('print-all').textContent = 'Cetak semua · ' + n + ' resi';
+    $('bprint-all').hidden = n < 2;
+    $('bprint-all').textContent = 'Cetak semua · ' + n + ' resi';
+    $('save-pdf').textContent = n > 1 ? 'Simpan PDF · ' + n + ' resi' : 'Simpan PDF';
+    $('pg').title = it && it.d ? it.d.name + (it.d.pages > 1 ? ', halaman ' + it.n : '') : '';
+    $('sort-wrap').hidden = n < 2;
+    refreshResiField();
+    refreshEditNote();
+  }
+
+  /* Mengenali PDF dan foto dari isi file, bukan hanya dari nama atau tipe.
+     Banyak file resi dari HP atau WhatsApp punya tipe kosong, "octet-stream",
+     nama tanpa titik (mis. "resi_pdf"), atau sampah di depan header %PDF. */
+  function findBytes(u8, pat, limit) {
+    var n = Math.min(u8.length - pat.length, limit);
+    outer: for (var i = 0; i <= n; i++) {
+      for (var j = 0; j < pat.length; j++) if (u8[i + j] !== pat[j]) continue outer;
+      return i;
+    }
+    return -1;
+  }
+  var PDF_SIG = [0x25, 0x50, 0x44, 0x46, 0x2D]; /* %PDF- */
+  function sniffImage(u8) {
+    if (u8[0] === 0xFF && u8[1] === 0xD8 && u8[2] === 0xFF) return 'image/jpeg';
+    if (u8[0] === 0x89 && u8[1] === 0x50 && u8[2] === 0x4E && u8[3] === 0x47) return 'image/png';
+    if (u8[0] === 0x47 && u8[1] === 0x49 && u8[2] === 0x46) return 'image/gif';
+    if (u8[0] === 0x42 && u8[1] === 0x4D) return 'image/bmp';
+    if (u8[0] === 0x52 && u8[1] === 0x49 && u8[2] === 0x46 && u8[3] === 0x46 && u8[8] === 0x57 && u8[9] === 0x45 && u8[10] === 0x42 && u8[11] === 0x50) return 'image/webp';
+    if (u8[4] === 0x66 && u8[5] === 0x74 && u8[6] === 0x79 && u8[7] === 0x70) {
+      var b = String.fromCharCode(u8[8], u8[9], u8[10], u8[11]);
+      if (/^(heic|heix|hevc|mif1|msf1|heim|heis)$/.test(b)) return 'image/heic';
+      if (/^avi[fs]$/.test(b)) return 'image/avif';
+    }
+    return '';
+  }
+  function looksPdfByName(f) {
+    var nm = String(f.name || '').trim();
+    return /pdf$/i.test(nm) || /pdf/i.test(f.type || '');
+  }
+
+  var pwQueue = Promise.resolve();
+  function askPassword(name, wrong) {
+    var run = function () {
+      return new Promise(function (resolve) {
+        var box = $('pwbox'), inp = $('pwin');
+        $('pwname').textContent = name;
+        $('pwerr').textContent = wrong ? 'Kata sandi salah. Coba lagi.' : '';
+        inp.value = '';
+        box.hidden = false;
+        try { box.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+        setTimeout(function () { try { inp.focus(); } catch (e) {} }, 60);
+        function done(v) {
+          box.hidden = true;
+          $('pwok').removeEventListener('click', ok);
+          $('pwskip').removeEventListener('click', skip);
+          inp.removeEventListener('keydown', key);
+          resolve(v);
+        }
+        function ok() { done(inp.value); }
+        function skip() { done(null); }
+        function key(e) { if (e.key === 'Enter') { e.preventDefault(); ok(); } if (e.key === 'Escape') skip(); }
+        $('pwok').addEventListener('click', ok);
+        $('pwskip').addEventListener('click', skip);
+        inp.addEventListener('keydown', key);
+      });
+    };
+    var p = pwQueue.then(run);
+    pwQueue = p.catch(function () {});
+    return p;
+  }
+
+  function openPdf(bytes, name, opts) {
+    return new Promise(function (resolve, reject) {
+      var o = { data: bytes, isEvalSupported: false, stopAtErrors: false };
+      for (var k in opts) o[k] = opts[k];
+      var task = window.pdfjsLib.getDocument(o);
+      var cancelled = false;
+      task.onPassword = function (update, reason) {
+        var wrong = reason === (window.pdfjsLib.PasswordResponses ? window.pdfjsLib.PasswordResponses.INCORRECT_PASSWORD : 2);
+        askPassword(name, wrong).then(function (pw) {
+          if (pw === null) { cancelled = true; try { task.destroy(); } catch (e) {} reject(new Error('dikunci kata sandi, dilewati')); }
+          else update(pw);
+        });
+      };
+      task.promise.then(resolve, function (e) { if (!cancelled) reject(e); });
+    });
+  }
+
+  function pdfErrText(e) {
+    var n = e && e.name, m = String(e && e.message || '');
+    if (/kata sandi/.test(m)) return m;
+    if (n === 'PasswordException') return 'dikunci kata sandi';
+    if (n === 'InvalidPDFException' || /Invalid PDF/i.test(m)) return 'file PDF rusak atau belum selesai diunduh';
+    if (n === 'MissingPDFException') return 'file kosong';
+    return 'PDF tidak bisa dibaca';
+  }
+
+  async function loadPdfBytes(u8, name) {
+    if (!window.pdfjsLib) throw new Error('Pembaca PDF tidak termuat. Periksa koneksi internet lalu muat ulang halaman.');
+    var off = findBytes(u8, PDF_SIG, 1048576);
+    var tries = [];
+    /* Percobaan 1: buang bagian sampah di depan header jika ada. */
+    tries.push({ bytes: off > 0 ? u8.slice(off) : u8.slice(0), opts: {} });
+    /* Percobaan 2: tanpa huruf tertanam dan dengan perbaikan struktur yang lebih longgar. */
+    tries.push({ bytes: off > 0 ? u8.slice(off) : u8.slice(0), opts: { disableFontFace: true, useSystemFonts: true, disableAutoFetch: true, disableStream: true, disableRange: true } });
+    /* Percobaan 3: file utuh apa adanya, siapa tahu header-nya ada di tengah. */
+    if (off > 0) tries.push({ bytes: u8.slice(0), opts: { disableFontFace: true } });
+    var lastErr = null;
+    for (var i = 0; i < tries.length; i++) {
+      try {
+        var pdf = await openPdf(tries[i].bytes, name, tries[i].opts);
+        if (!pdf.numPages) throw new Error('PDF tidak punya halaman');
+        /* Pastikan halaman pertama benar-benar bisa dibaca. */
+        await pdf.getPage(1);
+        return pdf;
+      } catch (e) {
+        lastErr = e;
+        if (/kata sandi/.test(String(e && e.message))) break;
+        if (e && e.name === 'PasswordException') break;
+      }
+    }
+    throw new Error(pdfErrText(lastErr));
+  }
+
+  async function loadImageBlob(blob) {
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.src = url;
+    try { await img.decode(); }
+    catch (e) {
+      await new Promise(function (res, rej) {
+        if (img.complete && img.naturalWidth) return res();
+        img.onload = res; img.onerror = function () { rej(new Error('foto tidak bisa dibuka')); };
+      });
+    }
+    if (!img.naturalWidth) throw new Error('foto tidak bisa dibuka');
+    return img;
+  }
+
+  async function readDoc(f) {
+    var key = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 7);
+    if (!f.size) throw new Error('file kosong');
+    var buf = await f.arrayBuffer();
+    var u8 = new Uint8Array(buf);
+    var hasSig = findBytes(u8, PDF_SIG, 1048576) >= 0;
+    var imgType = sniffImage(u8);
+    var namePdf = looksPdfByName(f);
+
+    if (hasSig || (namePdf && !imgType)) {
+      var pdf = await loadPdfBytes(u8, f.name || 'resi.pdf');
+      return { name: f.name || 'resi.pdf', kind: 'pdf', pdf: pdf, img: null, pages: pdf.numPages, key: key };
+    }
+    if (imgType || (f.type || '').indexOf('image/') === 0) {
+      try {
+        var img = await loadImageBlob(imgType ? new Blob([buf], { type: imgType }) : f);
+        return { name: f.name || 'resi', kind: 'image', pdf: null, img: img, pages: 1, key: key };
+      } catch (e) {
+        if (imgType === 'image/heic') throw new Error('foto HEIC dari iPhone belum didukung browser ini. Simpan ulang sebagai JPG');
+        throw e;
+      }
+    }
+    throw new Error('bukan PDF atau foto');
+  }
+  function updateFileLabel() {
+    var d = S.docs, n = 0;
+    d.forEach(function (x) { n += x.pages; });
+    $('fname').textContent = !d.length ? 'Sekarang memakai resi contoh'
+      : d.length === 1 ? d[0].name : d.length + ' file · ' + n + ' halaman';
+    $('drop').classList.toggle('has', d.length > 0);
+    $('filebar').hidden = !d.length;
+  }
+  async function loadFiles(files, append) {
+    files = Array.prototype.slice.call(files || []);
+    if (!files.length) return;
+    setStatus('Membaca ' + (files.length > 1 ? files.length + ' file' : 'file') + '…');
+    var added = [], bad = [];
+    for (var i = 0; i < files.length; i++) {
+      try { added.push(await readDoc(files[i])); }
+      catch (e) { bad.push(files[i].name + ' (' + (e && e.message ? e.message : 'tidak bisa dibuka') + ')'); }
+    }
+    if (!added.length) { setStatus('Tidak ada file yang bisa dibuka: ' + bad.join('; ') + '. Pilih PDF atau foto JPG/PNG.', true); return; }
+    if (!append || S.kind !== 'docs') { S.docs = []; S.masks.clear(); }
+    S.docs = S.docs.concat(added);
+    S.kind = 'docs'; S.idx = 0;
+    S.items = [{ d: S.docs[0], n: 1, box: null }];
+    updateFileLabel();
+    setStatus('');
+    await buildItems();
+    if (bad.length) setStatus('Dilewati: ' + bad.join('; '), true);
+  }
+  function clearFiles() {
+    S.docs = []; S.kind = 'sample'; S.masks.clear(); S.idx = 0;
+    S.items = [{ d: null, n: 1, box: null }];
+    updateFileLabel();
+    buildItems();
+  }
+
+  function baseName() {
+    if (S.kind === 'sample' || !S.docs.length) return 'resi-contoh';
+    if (S.docs.length > 1) return 'resi-gabungan';
+    var b = S.docs[0].name.replace(/\.[^.]+$/, '').replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '');
+    return b || 'resi';
+  }
+
+  async function saveBlob(filename, blob) {
+    var dl = null;
+    if (IN_ART) { try { dl = await window.claude.use('downloads'); } catch (e) { dl = null; } }
+    if (dl) {
+      try { await dl.save({ filename: filename, data: blob }); setSaveStatus('Tersimpan. Buka file ini di aplikasi printer untuk mencetak.'); }
+      catch (e) { setSaveStatus(e && e.code === 'declined' ? 'Penyimpanan dibatalkan.' : 'File tidak bisa disimpan di tampilan ini.', !(e && e.code === 'declined')); }
+      return;
+    }
+    if (IN_ART) { setSaveStatus('Penyimpanan tidak tersedia di tampilan ini.', true); return; }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setSaveStatus('Tersimpan. Buka file ini di aplikasi printer untuk mencetak.');
+  }
+
+  async function savePng() {
+    setSaveStatus('Menyiapkan PNG…');
+    try {
+      var o = opts();
+      var c = await render(S.items[S.idx], o);
+      var blob = await new Promise(function (r) { c.toBlob(r, 'image/png'); });
+      var suffix = S.items.length > 1 ? '-' + (S.idx + 1) : '';
+      await saveBlob(baseName() + suffix + '-' + o.lw + 'x' + o.lh + '.png', blob);
+    } catch (e) {
+      setSaveStatus('Gagal menyiapkan PNG.', true);
+    }
+  }
+
+  async function savePdf() {
+    if (!window.jspdf) { setSaveStatus('Pembuat PDF tidak termuat. Periksa koneksi internet.', true); return; }
+    setSaveStatus('Menyiapkan PDF…');
+    try {
+      var o = opts();
+      var orient = o.lw > o.lh ? 'landscape' : 'portrait';
+      var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [o.lw, o.lh], orientation: orient, compress: true });
+      for (var k = 0; k < S.items.length; k++) {
+        setSaveStatus('Menyiapkan resi ' + (k + 1) + ' dari ' + S.items.length + '…');
+        var c = await render(S.items[k], o);
+        if (k > 0) pdf.addPage([o.lw, o.lh], orient);
+        pdf.addImage(c, 'PNG', 0, 0, o.lw, o.lh);
+      }
+      await saveBlob(baseName() + '-' + o.lw + 'x' + o.lh + '.pdf', pdf.output('blob'));
+    } catch (e) {
+      setSaveStatus('Gagal menyiapkan PDF.', true);
+    }
+  }
+
+  /* ---------- Cetak lewat browser ---------- */
+  function setStatusB(msg, isErr) {
+    var el = $('status-b');
+    el.textContent = msg || '';
+    el.className = 'status' + (isErr ? ' err' : '');
+  }
+  var mmStr = function (v) { return String(Math.round(v * 100) / 100); };
+
+  function setTab(t) {
+    var bt = t === 'bt';
+    S.tab = bt ? 'bt' : 'browser';
+    $('m-browser').hidden = bt;
+    $('m-bt').hidden = !bt;
+    $('tab-browser').setAttribute('aria-selected', bt ? 'false' : 'true');
+    $('tab-bt').setAttribute('aria-selected', bt ? 'true' : 'false');
+    savePrefs();
+  }
+
+  async function printViaBrowser(list, label) {
+    if (B.busy) return;
+    B.busy = true;
+    var o = opts();
+    var copies = clamp(Math.round(+$('copies').value || 1), 1, 20);
+    var w = null;
+    if (/Android/i.test(navigator.userAgent)) { try { w = window.open('', '_blank'); } catch (e) { w = null; } }
+    var frame = null;
+    try {
+      var urls = [];
+      for (var k = 0; k < list.length; k++) {
+        setStatusB('Menyiapkan ' + label + ' ' + (k + 1) + ' dari ' + list.length + '…');
+        var c = await render(list[k], o);
+        urls.push(c.toDataURL('image/png'));
+      }
+      var pages = '';
+      urls.forEach(function (u) { for (var i = 0; i < copies; i++) pages += '<div class="p"><img alt="" src="' + u + '"></div>'; });
+      var html = '<!doctype html><html><head><meta charset="utf-8"><title>Resi</title><style>' +
+        '@page{size:' + mmStr(o.lw) + 'mm ' + mmStr(o.lh) + 'mm;margin:0}' +
+        'html,body{margin:0;padding:0;background:#fff}' +
+        '.p{width:' + mmStr(o.lw) + 'mm;height:' + mmStr(o.lh - 0.3) + 'mm;overflow:hidden;break-after:page;page-break-after:always}' +
+        '.p:last-child{break-after:auto;page-break-after:auto}' +
+        '.p img{display:block;width:100%;height:100%;image-rendering:pixelated}' +
+        '</style></head><body>' + pages + '</body></html>';
+      var doc;
+      if (w && w.document) { doc = w.document; }
+      else {
+        var old = $('printframe'); if (old) old.remove();
+        frame = document.createElement('iframe');
+        frame.id = 'printframe';
+        frame.setAttribute('aria-hidden', 'true');
+        frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+        document.body.appendChild(frame);
+        doc = frame.contentDocument;
+      }
+      doc.open(); doc.write(html); doc.close();
+      await Promise.all(Array.prototype.map.call(doc.images, function (im) {
+        return im.complete ? Promise.resolve() : new Promise(function (r) { im.onload = im.onerror = r; });
+      }));
+      var target = frame ? frame.contentWindow : w;
+      target.focus();
+      target.print();
+      setStatusB('Kotak cetak dibuka. Pilih printer, ukuran kertas ' + fmt(o.lw) + ' × ' + fmt(o.lh) + ' mm, margin Tidak ada, skala 100%.');
+    } catch (e) {
+      if (w) { try { w.close(); } catch (e2) { /* abaikan */ } }
+      setStatusB('Kotak cetak tidak bisa dibuka di tampilan ini. Pakai Simpan PNG atau Simpan PDF.', true);
+    }
+    B.busy = false;
+  }
+
+  /* ---------- Editor resi ---------- */
+  var E = { open: false, item: null, base: null, rects: [], hist: [], tool: 'hide', scope: 'one', sel: -1, drag: null, src: null };
+  function refreshEditNote() {
+    var it = S.items[S.idx];
+    var own = it && it.edit !== undefined && editOf(it);
+    var all = S.editAll && (S.editAll.crop || (S.editAll.hides && S.editAll.hides.length));
+    $('edit-note').textContent = own ? 'Resi ini diedit' : (it && it.edit === undefined && all ? 'Edit berlaku untuk semua resi' : '');
+  }
+  function edSnapshot() { return JSON.stringify(E.rects); }
+  function edPush() { E.hist.push(edSnapshot()); if (E.hist.length > 60) E.hist.shift(); }
+  function edMsg(t) { $('ed-msg').textContent = t || ''; }
+  function setEdTool(t) {
+    E.tool = t;
+    $('ed-t-hide').setAttribute('aria-selected', t === 'hide' ? 'true' : 'false');
+    $('ed-t-crop').setAttribute('aria-selected', t === 'crop' ? 'true' : 'false');
+    $('ed-hint').textContent = t === 'hide'
+      ? 'Seret di gambar untuk menutup bagian yang tidak ingin dicetak, misalnya deskripsi produk. Kotak bisa digeser dan diubah ukurannya.'
+      : 'Seret di gambar untuk memilih bagian yang ingin dicetak. Bagian di luar kotak dibuang dan resi diperbesar mengisi label.';
+  }
+  function setEdScope(sc) {
+    E.scope = sc;
+    $('ed-s-one').setAttribute('aria-selected', sc === 'one' ? 'true' : 'false');
+    $('ed-s-all').setAttribute('aria-selected', sc === 'all' ? 'true' : 'false');
+  }
+  function edDraw() {
+    var st = $('ed-stage');
+    Array.prototype.slice.call(st.querySelectorAll('.ed-r')).forEach(function (el) { el.remove(); });
+    E.rects.forEach(function (r, i) {
+      var el = document.createElement('div');
+      el.className = 'ed-r ' + r.t + (i === E.sel ? ' sel' : '');
+      el.style.left = (r.x * 100) + '%'; el.style.top = (r.y * 100) + '%';
+      el.style.width = (r.w * 100) + '%'; el.style.height = (r.h * 100) + '%';
+      el.dataset.i = i;
+      var tag = document.createElement('span'); tag.className = 'tag';
+      tag.textContent = r.t === 'crop' ? 'Dicetak' : 'Tidak dicetak';
+      el.appendChild(tag);
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.textContent = '×';
+      x.setAttribute('aria-label', r.t === 'crop' ? 'Hapus potongan' : 'Hapus kotak ini');
+      x.dataset.del = i;
+      el.appendChild(x);
+      ['tl', 'br'].forEach(function (c) { var h = document.createElement('span'); h.className = 'hd ' + c; h.dataset.h = c; el.appendChild(h); });
+      st.appendChild(el);
+    });
+    trTree(st);
+  }
+  function edPoint(e) {
+    var r = $('ed-cv').getBoundingClientRect();
+    return { x: clamp((e.clientX - r.left) / r.width, 0, 1), y: clamp((e.clientY - r.top) / r.height, 0, 1) };
+  }
+  function normRect(r) {
+    var x = Math.min(r.x, r.x + r.w), y = Math.min(r.y, r.y + r.h);
+    var w = Math.abs(r.w), h = Math.abs(r.h);
+    x = clamp(x, 0, 1); y = clamp(y, 0, 1); w = Math.min(w, 1 - x); h = Math.min(h, 1 - y);
+    return { t: r.t, x: x, y: y, w: w, h: h };
+  }
+  function onStageDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    var t = e.target;
+    if (t.dataset && t.dataset.del !== undefined) return;
+    var p = edPoint(e);
+    var st = $('ed-stage');
+    try { st.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+    edPush();
+    var rel = t.closest ? t.closest('.ed-r') : null;
+    if (rel) {
+      var i = +rel.dataset.i, r = E.rects[i];
+      E.sel = i;
+      if (t.dataset.h) E.drag = { mode: 'resize', i: i, corner: t.dataset.h, start: p, orig: { x: r.x, y: r.y, w: r.w, h: r.h } };
+      else E.drag = { mode: 'move', i: i, start: p, orig: { x: r.x, y: r.y, w: r.w, h: r.h } };
+    } else {
+      var nr = { t: E.tool, x: p.x, y: p.y, w: 0, h: 0 };
+      if (E.tool === 'crop') E.rects = E.rects.filter(function (q) { return q.t !== 'crop'; });
+      E.rects.push(nr);
+      E.sel = E.rects.length - 1;
+      E.drag = { mode: 'new', i: E.sel, start: p };
+    }
+    edDraw();
+  }
+  function onStageMove(e) {
+    if (!E.drag) return;
+    e.preventDefault();
+    var p = edPoint(e), g = E.drag, r = E.rects[g.i];
+    if (!r) return;
+    if (g.mode === 'new') { r.w = p.x - g.start.x; r.h = p.y - g.start.y; r.x = g.start.x; r.y = g.start.y; var n = normRect(r); E.rects[g.i] = n; E.rects[g.i]._raw = { x: g.start.x, y: g.start.y }; }
+    else if (g.mode === 'move') {
+      r.x = clamp(g.orig.x + p.x - g.start.x, 0, 1 - g.orig.w);
+      r.y = clamp(g.orig.y + p.y - g.start.y, 0, 1 - g.orig.h);
+    } else {
+      var o = g.orig, x0 = o.x, y0 = o.y, x1 = o.x + o.w, y1 = o.y + o.h;
+      if (g.corner === 'tl') { x0 = p.x; y0 = p.y; } else { x1 = p.x; y1 = p.y; }
+      E.rects[g.i] = normRect({ t: r.t, x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+    }
+    edDraw();
+  }
+  function onStageUp() {
+    if (!E.drag) return;
+    var g = E.drag; E.drag = null;
+    var r = E.rects[g.i];
+    if (r) { delete r._raw; E.rects[g.i] = normRect(r); }
+    if (r && (r.w < 0.015 || r.h < 0.008)) {
+      E.rects.splice(g.i, 1); E.sel = -1;
+      if (g.mode === 'new') E.hist.pop();
+    }
+    edDraw();
+  }
+  function onStageClick(e) {
+    var t = e.target;
+    if (t.dataset && t.dataset.del !== undefined) {
+      edPush();
+      E.rects.splice(+t.dataset.del, 1);
+      E.sel = -1;
+      edDraw();
+    }
+  }
+  function rectsFromEdit(ed) {
+    var out = [];
+    if (!ed) return out;
+    if (ed.crop) out.push({ t: 'crop', x: ed.crop.x, y: ed.crop.y, w: ed.crop.w, h: ed.crop.h });
+    (ed.hides || []).forEach(function (h) { out.push({ t: 'hide', x: h.x, y: h.y, w: h.w, h: h.h }); });
+    return out;
+  }
+  function editFromRects(rects) {
+    var crop = null, hides = [];
+    rects.forEach(function (r) {
+      var q = { x: r.x, y: r.y, w: r.w, h: r.h };
+      if (r.t === 'crop') crop = q; else hides.push(q);
+    });
+    return (crop || hides.length) ? { crop: crop, hides: hides } : null;
+  }
+  async function openEditor() {
+    var it = S.items[S.idx];
+    if (!it) return;
+    var o = opts();
+    E.item = it;
+    edMsg('');
+    try {
+      var src = await getSourceFor(it.n, false, it.d);
+      var base = await baseBoxOf(it, src, o);
+      E.src = src; E.base = base;
+      var cv = $('ed-cv');
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      var maxPx = 900 * dpr;
+      var k = maxPx / Math.max(base.w, base.h);
+      cv.width = Math.max(1, Math.round(base.w * k));
+      cv.height = Math.max(1, Math.round(base.h * k));
+      var cx = cv.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+      await src.draw(cx, base.x, base.y, base.w, base.h, cv.width, cv.height);
+    } catch (e) {
+      setStatus('Resi ini tidak bisa dibuka di editor.', true);
+      return;
+    }
+    var own = it.edit !== undefined;
+    E.rects = rectsFromEdit(own ? it.edit : S.editAll);
+    E.hist = []; E.sel = -1; E.drag = null;
+    setEdScope(own || !S.editAll ? 'one' : 'all');
+    if (S.items.length < 2 && !S.editAll) setEdScope('one');
+    $('ed-s-all').textContent = S.items.length > 1 ? 'Semua resi · ' + S.items.length : 'Semua resi';
+    $('ed-auto').hidden = !(it.d && it.d.kind === 'pdf');
+    setEdTool(E.rects.some(function (r) { return r.t === 'hide'; }) || !E.rects.length ? 'hide' : 'crop');
+    edDraw();
+    $('ed').hidden = false;
+    E.open = true;
+    document.documentElement.style.overflow = 'hidden';
+    setTimeout(function () { try { $('ed-close').focus(); } catch (e) {} }, 30);
+  }
+  function closeEditor() {
+    $('ed').hidden = true; E.open = false; E.drag = null;
+    document.documentElement.style.overflow = '';
+    try { $('edit-open').focus(); } catch (e) {}
+  }
+  function saveEditor() {
+    var ed = editFromRects(E.rects);
+    if (E.scope === 'all') {
+      S.editAll = ed;
+      S.items.forEach(function (x) { delete x.edit; });
+      S.base.forEach(function (x) { delete x.edit; });
+    } else {
+      E.item.edit = ed;
+    }
+    closeEditor();
+    refreshEditNote();
+    schedule();
+  }
+  async function autoFindProduct() {
+    var it = E.item;
+    if (!it || !it.d || it.d.kind !== 'pdf') return;
+    try {
+      var page = await it.d.pdf.getPage(it.n);
+      var vp = page.getViewport({ scale: 1 });
+      var tc = await page.getTextContent();
+      var b = E.base, top = Infinity, botText = -Infinity;
+      var RX = /(nama\s*produk|deskripsi|daftar\s*produk|rincian\s*(produk|pesanan)|isi\s*paket|^produk\b|^sku\b|^variasi|^qty\b|^jumlah\s*(barang|produk)?$|product\s*name|^item\b)/i;
+      tc.items.forEach(function (t) {
+        if (!t.str || !t.str.trim()) return;
+        var pt = vp.convertToViewportPoint(t.transform[4], t.transform[5]);
+        var fh = Math.hypot(t.transform[2], t.transform[3]) || 8;
+        if (pt[0] < b.x - 2 || pt[0] > b.x + b.w + 2 || pt[1] < b.y - 2 || pt[1] > b.y + b.h + 2) return;
+        if (RX.test(t.str.trim())) top = Math.min(top, pt[1] - fh * 1.1);
+      });
+      if (!isFinite(top)) { edMsg('Bagian deskripsi produk tidak ditemukan otomatis. Seret sendiri di gambar.'); return; }
+      var fy = clamp((top - b.y) / b.h, 0, 0.98);
+      if (fy < 0.2) { edMsg('Judul produk terlalu dekat ke atas, jadi tidak ditutup otomatis. Seret sendiri di gambar.'); return; }
+      edPush();
+      E.rects.push({ t: 'hide', x: 0, y: fy, w: 1, h: 1 - fy });
+      E.sel = E.rects.length - 1;
+      setEdTool('hide');
+      edDraw();
+      edMsg('Bagian produk sudah ditandai. Periksa kotaknya dan sesuaikan bila perlu.');
+    } catch (e) {
+      edMsg('Teks di resi ini tidak bisa dibaca. Seret sendiri di gambar.');
+    }
+  }
+  (function () {
+    var st = $('ed-stage');
+    st.addEventListener('pointerdown', onStageDown);
+    st.addEventListener('pointermove', onStageMove);
+    st.addEventListener('pointerup', onStageUp);
+    st.addEventListener('pointercancel', onStageUp);
+    st.addEventListener('click', onStageClick);
+    $('edit-open').addEventListener('click', openEditor);
+    $('ed-close').addEventListener('click', closeEditor);
+    $('ed-cancel').addEventListener('click', closeEditor);
+    $('ed-save').addEventListener('click', saveEditor);
+    $('ed-t-hide').addEventListener('click', function () { setEdTool('hide'); });
+    $('ed-t-crop').addEventListener('click', function () { setEdTool('crop'); });
+    $('ed-s-one').addEventListener('click', function () { setEdScope('one'); });
+    $('ed-s-all').addEventListener('click', function () { setEdScope('all'); });
+    $('ed-auto').addEventListener('click', autoFindProduct);
+    $('ed-undo').addEventListener('click', function () {
+      if (!E.hist.length) return;
+      E.rects = JSON.parse(E.hist.pop()); E.sel = -1; edDraw();
+    });
+    $('ed-reset').addEventListener('click', function () {
+      if (!E.rects.length) return;
+      edPush(); E.rects = []; E.sel = -1; edDraw();
+    });
+    $('ed').addEventListener('pointerdown', function (e) { if (e.target === $('ed')) closeEditor(); });
+    document.addEventListener('keydown', function (e) {
+      if (!E.open) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeEditor(); }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && E.sel >= 0 && document.activeElement && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault(); edPush(); E.rects.splice(E.sel, 1); E.sel = -1; edDraw();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); $('ed-undo').click(); }
+    });
+  })();
+
+  /* ---------- Event ---------- */
+  $('file').addEventListener('change', function (e) { loadFiles(e.target.files, false); e.target.value = ''; });
+  $('file-add').addEventListener('change', function (e) { loadFiles(e.target.files, true); e.target.value = ''; });
+  $('addmore').addEventListener('click', function () { $('file-add').click(); });
+  $('file-any').addEventListener('change', function (e) { loadFiles(e.target.files, S.kind === 'docs' && S.docs.length > 0); e.target.value = ''; });
+  $('pickany').addEventListener('click', function () { $('file-any').click(); });
+  $('clearall').addEventListener('click', clearFiles);
+  $('sort').addEventListener('input', function () { markChips('sort', 'sort-chips'); applySort(); });
+  var drop = $('drop');
+  drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', function () { drop.classList.remove('over'); });
+  drop.addEventListener('drop', function (e) {
+    e.preventDefault(); drop.classList.remove('over');
+    loadFiles(e.dataTransfer && e.dataTransfer.files, false);
+  });
+  ['size', 'printer', 'lw', 'lh', 'pw', 'dpi', 'thick', 'margin', 'hmargin', 'shx', 'shy', 'exh', 'expos', 'dens', 'lang', 'copies', 'gap', 'chunk', 'invert']
+    .forEach(function (id) { $(id).addEventListener('input', schedule); });
+  $('deskew').addEventListener('input', function () { S.masks.clear(); savePrefs(); buildItems(); });
+  ['split', 'trim'].forEach(function (id) {
+    $(id).addEventListener('input', function () { syncLabels(); buildItems(); });
+  });
+  $('chsel').addEventListener('change', function () {
+    var f = P.chars[+$('chsel').value];
+    if (f) { P.ch = f.ch; log('Saluran tulis diganti: ' + f.ch.uuid.slice(0, 8)); }
+  });
+  $('prev').addEventListener('click', function () { if (S.idx > 0) { S.idx--; updatePager(); schedule(); } });
+  $('next').addEventListener('click', function () { if (S.idx < S.items.length - 1) { S.idx++; updatePager(); schedule(); } });
+  $('save-png').addEventListener('click', savePng);
+  $('save-pdf').addEventListener('click', savePdf);
+  $('connect').addEventListener('click', connect);
+  $('reconnect').addEventListener('click', reconnect);
+  $('print').addEventListener('click', function () { printList([S.items[S.idx]], 'resi'); });
+  $('print-all').addEventListener('click', function () { printList(S.items.slice(), 'resi'); });
+  $('print-test').addEventListener('click', function () {
+    printList([{ n: 1, calib: true }], 'pola posisi');
+  });
+  $('calib').addEventListener('click', calibrate);
+  $('tab-browser').addEventListener('click', function () { setTab('browser'); });
+  $('tab-bt').addEventListener('click', function () { setTab('bt'); });
+  $('bprint').addEventListener('click', function () { printViaBrowser([S.items[S.idx]], 'resi'); });
+  $('bprint-all').addEventListener('click', function () { printViaBrowser(S.items.slice(), 'resi'); });
+  $('bprint-test').addEventListener('click', function () {
+    printViaBrowser([{ n: 1, calib: true }], 'pola posisi');
+  });
+  $('rotate').addEventListener('input', schedule);
+  $('sharp').addEventListener('input', schedule);
+  ['extra', 'ex-bar', 'ex-num'].forEach(function (id) {
+    $(id).addEventListener('input', function () { $('extra-opts').hidden = !$('extra').checked; prepareExtra(); schedule(); });
+  });
+  $('resino').addEventListener('input', function () {
+    var it = S.items[S.idx];
+    if (!it) return;
+    it.resiManual = $('resino').value.replace(/[^\x20-\x7E]/g, '').trim().toUpperCase();
+    schedule();
+  });
+  $('resino').addEventListener('blur', refreshResiField);
+  $('fill').addEventListener('input', schedule);
+  $('printer').addEventListener('input', function () {
+    var v = $('printer').value;
+    if (v === 'manual') return;
+    $('lang').value = (+v.split('x')[0]) <= 72 ? 'escpos' : 'tspl';
+  });
+  document.addEventListener('paste', function (e) {
+    var f = e.clipboardData && e.clipboardData.files;
+    if (f && f.length) loadFiles(f, false);
+  });
+
+
+  /* ---------- Bahasa (Indonesia / English) ---------- */
+  var LINKS = { donate: 'https://trakteer.id/mohamat-agung-nugroho-xgjd', contact: '' }; /* isi dengan alamat https atau mailto: untuk menampilkan tautan di bagian bawah */
+  var EN = {"Pilih file resi": "Choose shipping label files", "PDF atau foto": "PDF or photo", "Cek pratinjau": "Check the preview", "Ukuran label dan jumlah resi": "Label size and number of labels", "Cetak atau simpan": "Print or save", "File resi dan data pembeli diproses di perangkatmu dan tidak diunggah ke server.": "Shipping label files and buyer data are processed on your device and never uploaded to a server.", "Cetak langsung lewat Bluetooth tersedia di file": "Direct Bluetooth printing is available in the file", "yang dikirim di chat. Di halaman ini kamu bisa merapikan resi lalu menyimpannya sebagai PNG atau PDF.": "sent in the chat. On this page you can tidy up labels and save them as PNG or PDF.", "PDF atau foto. Bisa pilih banyak file sekaligus.": "PDF or photos. You can pick many files at once.", "Sekarang memakai resi contoh": "Using the sample label", "+ Tambah file": "+ Add files", "Kosongkan": "Clear", "Menyiapkan pratinjau…": "Preparing preview…", "Cetak": "Print", "Salinan per resi": "Copies per label", "Lewat browser": "Via browser", "Bluetooth langsung": "Direct Bluetooth", "Cocok untuk printer yang terpasang di komputer lewat USB atau driver, dan printer yang punya layanan cetak di HP. Di kotak cetak, pilih printer dan ukuran kertas sama dengan label, margin Tidak ada, skala 100%.": "Works for printers connected to a computer by USB or driver, and printers with a print service on your phone. In the print dialog, choose the printer and a paper size equal to the label, margins None, scale 100%.", "Cetak resi ini": "Print this label", "Cetak semua": "Print all", "Cetak uji": "Test print", "Bluetooth tidak tersedia di tampilan ini.": "Bluetooth is not available in this view.", "Pakai Chrome atau Edge di Android atau komputer, dengan halaman dibuka lewat alamat https atau file lokal. Cara lain yang tetap bisa dipakai: Cetak lewat browser atau Simpan PNG.": "Use Chrome or Edge on Android or a computer, with the page opened over https or as a local file. Other options that still work: Print via browser or Save PNG.", "Browser ini tidak mendukung Web Bluetooth, atau halaman ini dibuka di dalam aplikasi lain.": "This browser does not support Web Bluetooth, or the page is opened inside another app.", "Halaman ini dibuka dari alamat yang tidak aman, jadi Chrome memblokir Bluetooth.": "This page is opened from an insecure address, so Chrome blocks Bluetooth.", "Sambung printer": "Connect printer", "Ganti printer": "Change printer", "Sambung ulang": "Reconnect", "Belum tersambung": "Not connected", "Terputus": "Disconnected", "Nyalakan printer dan tutup aplikasi printer lain yang sedang tersambung. Jika printer tidak muncul di daftar, kemungkinan memakai Bluetooth klasik yang tidak bisa dipakai browser. Pakai Simpan PNG lalu cetak dari aplikasi printer.": "Turn on the printer and close other printer apps that are connected. If the printer does not appear in the list, it probably uses classic Bluetooth, which browsers cannot use. Use Save PNG and print from the printer app.", "Simpan hasil": "Save result", "Simpan PNG": "Save PNG", "Simpan PDF": "Save PDF", "Ukuran dan hasil": "Size and output", "Ukuran label": "Label size", "100 × 150 mm · A6, ukuran resi standar marketplace": "100 × 150 mm · A6, standard marketplace label size", "78 × 100 mm · mis. Blueprint Eco80BT, Xprinter XP-420B": "78 × 100 mm · e.g. Blueprint Eco80BT, Xprinter XP-420B", "Isi lebar dan tinggi sendiri dalam milimeter.": "Enter the width and height yourself in millimeters.", "Lebar (mm)": "Width (mm)", "Tinggi (mm)": "Height (mm)", "Printer label 4 inci (mis. Xprinter XP-420B) · cetak 104 mm, 203 dpi": "4-inch label printer (e.g. Xprinter XP-420B) · print 104 mm, 203 dpi", "Printer label 4 inci · cetak 104 mm, 300 dpi": "4-inch label printer · print 104 mm, 300 dpi", "Blueprint Eco80BT · cetak 78 mm, 203 dpi": "Blueprint Eco80BT · print 78 mm, 203 dpi", "Printer struk 80 mm (mis. VSC MP-80M) · cetak 72 mm": "80 mm receipt printer (e.g. VSC MP-80M) · print 72 mm", "Printer struk 58 mm (mis. Eppos POS58L) · cetak 48 mm": "58 mm receipt printer (e.g. Eppos POS58L) · print 48 mm", "Lebar cetak (mm)": "Print width (mm)", "Resolusi": "Resolution", "Urutan resi": "Label order", "Sesuai file": "As in file", "Per kurir": "By courier", "Per nama produk": "By product name", "Teks tidak terbaca di file ini, jadi urutan tidak berubah. Foto dan PDF hasil scan tidak bisa diurutkan.": "No text could be read in this file, so the order is unchanged. Photos and scanned PDFs cannot be sorted.", "Semua resi terbaca dan diurutkan.": "All labels were read and sorted.", "Jumlah resi per halaman file": "Labels per file page", "Satu resi": "One label", "Otomatis pisahkan": "Split automatically", "2 resi, kiri dan kanan": "2 labels, left and right", "2 resi, atas dan bawah": "2 labels, top and bottom", "4 resi, 2 × 2": "4 labels, 2 × 2", "1 resi": "1 label", "Otomatis": "Auto", "2 kiri-kanan": "2 left-right", "2 atas-bawah": "2 top-bottom", "4 resi (2×2)": "4 labels (2×2)", "Resi dipisahkan di bagian kosong yang cukup lebar. Jika ada resi yang terbelah, pakai pilihan 2 atau 4 resi.": "Labels are split at empty gaps that are wide enough. If a label gets cut in half, use the 2 or 4 label options.", "Ketebalan cetak": "Print thickness", "Sedang": "Medium", "Tipis": "Thin", "Tebal": "Thick", "Pinggir atas dan bawah": "Top and bottom margin", "Potong otomatis bagian kosong": "Auto-trim empty space", "Putar otomatis jika resi lebih pas dalam posisi miring": "Auto-rotate when the label fits better sideways", "Pengaturan printer lanjutan": "Advanced printer settings", "Bahasa perintah": "Command language", "CPCL · printer label portabel": "CPCL · portable label printer", "ESC/POS · printer struk": "ESC/POS · receipt printer", "ZPL · printer gaya Zebra": "ZPL · Zebra-style printer", "TSPL · printer label (Eco80BT)": "TSPL · label printer (Eco80BT)", "Celah label (mm)": "Label gap (mm)", "Kepekatan printer": "Printer darkness", "Terang": "Lighter", "Gelap": "Darker", "Kecepatan kirim data": "Data send speed", "Paling aman · 20 byte": "Safest · 20 bytes", "Sedang · 100 byte": "Medium · 100 bytes", "Cepat · 180 byte": "Fast · 180 bytes", "Saluran tulis Bluetooth": "Bluetooth write channel", "Sambungkan printer dulu": "Connect a printer first", "Tidak ada saluran tulis": "No write channel", "Balik warna, pakai jika hasil cetak negatif": "Invert colors, use if the print comes out negative", "Kalibrasi sensor label": "Calibrate label sensor", "Kalibrasi dilakukan setiap ganti gulungan label. Printer akan menarik beberapa label kosong. Tersedia untuk TSPL dan ZPL.": "Calibrate every time you change the label roll. The printer will feed a few blank labels. Available for TSPL and ZPL.", "Log sambungan akan muncul di sini.": "The connection log will appear here.", "Bantuan": "Help", "Hasil cetak kekecilan": "The print comes out too small", "Pilih ukuran label yang sama dengan kertas di printer. Jika mencetak lewat aplikasi lain, atur ukuran kertas yang sama, margin 0, dan skala 100%. Pastikan juga printer yang dipilih di atas sesuai, karena lebar area cetak memengaruhi ukuran resi.": "Choose the same label size as the paper in the printer. If you print through another app, set the same paper size, margin 0 and scale 100%. Also make sure the printer chosen above is right, because the print area width affects the label size.", "Hasil terlalu tebal, pudar, atau buram": "The print is too thick, faded or blurry", "Geser Ketebalan cetak ke Tipis atau Tebal sampai garis dan barcode tajam. Kepekatan di printer juga berpengaruh. Turunkan jika hitamnya terlalu pekat, dan pakai kertas thermal yang bagus.": "Move Print thickness toward Thin or Thick until lines and barcodes are sharp. The printer darkness also matters. Lower it if the black is too heavy, and use good thermal paper.", "Resi terpotong atau bergeser": "The label is cut off or shifted", "Jalankan kalibrasi sensor label di printer setiap ganti gulungan. Pastikan ukuran label dan area cetak sesuai. Printer tidak bisa mencetak sampai ke tepi kertas, jadi isi di tepi bisa hilang. Cetak pola posisi, baca angka penggaris di kedua tepi kertas, lalu geser setengah dari selisihnya ke arah angka yang lebih besar. Kalau bagian atas hilang, geser ke bawah.": "Run the label sensor calibration on the printer every time you change the roll. Make sure the label size and print area match. Printers cannot print all the way to the paper edge, so content at the edge can be lost. Print the position pattern, read the ruler at both paper edges, then shift half the difference toward the larger number. If the top is missing, shift down.", "Satu halaman PDF berisi beberapa resi": "One PDF page holds several labels", "Pilih Otomatis pisahkan, atau pilih tata letak yang cocok seperti 2 resi kiri dan kanan, atau 4 resi 2 × 2. Hasilnya bisa digeser satu per satu di pratinjau.": "Choose Split automatically, or pick a matching layout such as 2 labels left and right, or 4 labels 2 × 2. You can step through the results one by one in the preview.", "Printer tidak muncul saat menyambung Bluetooth": "The printer does not show up when connecting by Bluetooth", "Browser hanya bisa menyambung ke printer Bluetooth jenis BLE. Banyak printer memakai Bluetooth klasik sehingga tidak muncul. Pakai Cetak lewat browser, atau Simpan PNG lalu cetak dari aplikasi printer.": "Browsers can only connect to BLE Bluetooth printers. Many printers use classic Bluetooth, so they do not show up. Use Print via browser, or Save PNG and print from the printer app.", "Bagaimana di iPhone atau iPad?": "What about iPhone or iPad?", "Safari belum mendukung Bluetooth browser. Pakai Simpan PNG atau PDF, lalu cetak dari aplikasi printer, atau Cetak lewat browser jika printernya mendukung AirPrint.": "Safari does not support browser Bluetooth yet. Use Save PNG or PDF and print from the printer app, or Print via browser if the printer supports AirPrint.", "Apakah data resi saya dikirim ke server?": "Is my shipping label data sent to a server?", "Tidak. File resi dibaca dan diolah langsung di browser di perangkatmu. Halaman hanya memuat pustaka dan huruf dari internet, bukan mengirim file resi.": "No. Label files are read and processed directly in the browser on your device. The page only loads libraries and fonts from the internet; it does not send your files anywhere.", "Rapikan Resi · alat bantu untuk penjual online. Semua pemrosesan terjadi di perangkatmu.": "Rapikan Resi · a helper for online sellers. All processing happens on your device.", "Pratinjau hasil": "Result preview", "Pratinjau hasil cetak": "Print result preview", "Resi sebelumnya": "Previous label", "Resi berikutnya": "Next label", "Cara mencetak": "How to print", "Mencari printer…": "Looking for printers…", "Menyambung ulang…": "Reconnecting…", "Tersambung. Siap mencetak.": "Connected. Ready to print.", "Terkirim. Printer sedang mencetak.": "Sent. The printer is printing.", "Membaca teks resi…": "Reading label text…", "Membaca file…": "Reading file…", "Gagal memproses file. Coba file lain atau muat ulang halaman.": "Could not process the file. Try another file or reload the page.", "Gagal menyiapkan PNG.": "Could not prepare the PNG.", "Gagal menyiapkan PDF.": "Could not prepare the PDF.", "Gagal mengirim ke printer.": "Could not send to the printer.", "Gagal mengirim kalibrasi.": "Could not send the calibration.", "Gagal menyambung ke printer.": "Could not connect to the printer.", "Kalibrasi hanya tersedia untuk TSPL dan ZPL.": "Calibration is only available for TSPL and ZPL.", "Perintah kalibrasi terkirim. Tunggu printer selesai menarik label.": "Calibration command sent. Wait for the printer to finish feeding labels.", "Tersimpan. Buka file ini di aplikasi printer untuk mencetak.": "Saved. Open this file in the printer app to print.", "Penyimpanan dibatalkan.": "Saving was cancelled.", "File tidak bisa disimpan di tampilan ini.": "The file cannot be saved in this view.", "Penyimpanan tidak tersedia di tampilan ini.": "Saving is not available in this view.", "Pembuat PDF tidak termuat. Periksa koneksi internet.": "The PDF maker did not load. Check your internet connection.", "Pembaca PDF tidak termuat. Periksa koneksi internet lalu muat ulang halaman.": "The PDF reader did not load. Check your internet connection and reload the page.", "Tidak ada printer yang dipilih.": "No printer was selected.", "Izin Bluetooth ditolak. Izinkan Bluetooth dan lokasi untuk Chrome di pengaturan Android.": "Bluetooth permission was denied. Allow Bluetooth and location for Chrome in Android settings.", "Printer tidak bisa dijangkau. Pastikan printer menyala, dekat, dan tidak tersambung ke aplikasi lain.": "The printer cannot be reached. Make sure it is on, nearby, and not connected to another app.", "Printer belum disambung.": "The printer is not connected yet.", "Printer tersambung, tetapi tidak ada saluran tulis yang bisa dipakai.": "The printer is connected, but no usable write channel was found.", "Kotak cetak tidak bisa dibuka di tampilan ini. Pakai Simpan PNG atau Simpan PDF.": "The print dialog cannot be opened in this view. Use Save PNG or Save PDF.", "☕ Traktir kopi": "☕ Buy me a coffee", "⬇ Pasang aplikasi": "⬇ Install app", "Hubungi kami": "Contact us", "Hasil cetak miring": "The print comes out tilted", "Kalau resi di pratinjau sudah lurus tetapi hasil cetaknya miring, penyebabnya ada di printer. Pasang gulungan label lurus, rapatkan penjepit kertas ke kedua sisi label, dan jangan biarkan gulungan bergeser ke samping saat ditarik. Kalau resi aslinya foto atau hasil scan yang miring, nyalakan Luruskan otomatis di pengaturan.": "If the label is straight in the preview but comes out tilted, the cause is the printer. Load the label roll straight, push the paper guides against both sides of the label, and keep the roll from sliding sideways as it feeds. If the original label is a tilted photo or scan, turn on Auto-straighten in the settings.", "Cetak pola posisi": "Print position pattern", "Luruskan otomatis resi yang miring (foto dan PDF hasil scan)": "Auto-straighten tilted labels (photos and scanned PDFs)", "Edit resi": "Edit label", "Resi ini diedit": "This label is edited", "Edit berlaku untuk semua resi": "Edit applies to all labels", "Tutup editor": "Close editor", "Seret di gambar untuk menutup bagian yang tidak ingin dicetak, misalnya deskripsi produk. Kotak bisa digeser dan diubah ukurannya.": "Drag on the image to cover parts you do not want printed, such as the product description. Boxes can be moved and resized.", "Seret di gambar untuk memilih bagian yang ingin dicetak. Bagian di luar kotak dibuang dan resi diperbesar mengisi label.": "Drag on the image to choose the part to print. Everything outside the box is removed and the label is enlarged to fill the paper.", "Alat edit": "Edit tools", "Tutup bagian": "Cover part", "Potong tepi": "Crop edges", "Cari deskripsi produk": "Find product description", "Terapkan ke": "Apply to", "Resi ini saja": "This label only", "Semua resi": "All labels", "Urungkan": "Undo", "Hapus semua edit": "Remove all edits", "Batal": "Cancel", "Simpan edit": "Save edit", "Dicetak": "Printed", "Tidak dicetak": "Not printed", "Hapus potongan": "Remove crop", "Hapus kotak ini": "Remove this box", "Resi ini tidak bisa dibuka di editor.": "This label cannot be opened in the editor.", "Bagian deskripsi produk tidak ditemukan otomatis. Seret sendiri di gambar.": "The product description was not found automatically. Drag on the image yourself.", "Judul produk terlalu dekat ke atas, jadi tidak ditutup otomatis. Seret sendiri di gambar.": "The product heading is too close to the top, so it was not covered automatically. Drag on the image yourself.", "Bagian produk sudah ditandai. Periksa kotaknya dan sesuaikan bila perlu.": "The product part is marked. Check the box and adjust it if needed.", "Teks di resi ini tidak bisa dibaca. Seret sendiri di gambar.": "The text on this label cannot be read. Drag on the image yourself.", "File resi tidak muncul di daftar?": "Label file not showing in the list?", "Tampilkan semua file": "Show all files", "dikunci kata sandi. Masukkan kata sandinya untuk membuka.": "is password-protected. Enter the password to open it.", "Buka PDF": "Open PDF", "Lewati file ini": "Skip this file", "Kata sandi salah. Coba lagi.": "Wrong password. Try again.", "Posisi barcode dan nomor": "Barcode and number position", "Di bawah resi": "Below the label", "Di atas resi": "Above the label", "Barcode dan nomor resi tambahan": "Extra barcode and label number", "Aktifkan Tambahkan barcode dan nomor resi, lalu pilih posisinya di bawah atau di atas resi. Aplikasi membaca nomor dari PDF dan membuat barcode Code 128 yang tajam, jadi mudah dipindai walau resi asli diperkecil. Untuk foto atau PDF hasil scan, ketik nomornya sendiri.": "Turn on Add a barcode and label number, then choose its position below or above the label. The app reads the number from the PDF and draws a sharp Code 128 barcode, so it scans easily even when the original label is shrunk. For photos or scanned PDFs, type the number yourself.", "Tambahkan barcode dan nomor resi": "Add a barcode and label number", "Cetak barcode": "Print barcode", "Cetak nomor resi": "Print label number", "Nomor resi untuk label ini": "Label number for this label", "Tinggi barcode": "Barcode height", "Nomor resi tidak terbaca otomatis. Ketik manual di kolom ini.": "The label number could not be read automatically. Type it in this field.", "Pertajam teks kecil dan nomor resi": "Sharpen small text and label numbers", "Regangkan ke bawah agar mengisi kertas (maks. 25%)": "Stretch downward to fill the paper (max. 25%)", "Isi resi diperbesar ke arah tinggi saja, jadi hurufnya sedikit lebih tinggi. Setelah mencoba, pindai barcode dan kode QR sekali untuk memastikan masih terbaca.": "The label is enlarged in height only, so letters look slightly taller. After trying it, scan the barcode and QR code once to make sure they still read.", "Pinggir kiri dan kanan": "Left and right margin", "Geser ke kiri atau kanan": "Shift left or right", "Geser ke atas atau bawah": "Shift up or down", "Tengah": "Centered", "Standar": "Default", "Pakai tiga pengaturan ini kalau resi terpotong atau tidak di tengah. Cetak pola posisi dulu, baca angka penggaris di kedua tepi kertas, lalu geser setengah dari selisihnya ke arah angka yang lebih besar.": "Use these three settings if the label is cut off or not centered. Print the position pattern first, read the ruler at both paper edges, then shift half the difference toward the larger number."};
+  var PAT = [
+ [/^(Kanan|Kiri|Bawah|Atas) (.+) mm$/, function (m) { return { Kanan: 'Right ', Kiri: 'Left ', Bawah: 'Down ', Atas: 'Up ' }[m[1]] + m[2] + ' mm'; }],
+ [/^Memisahkan resi, halaman (\d+) dari (\d+)…$/, 'Separating labels, page $1 of $2…'],
+ [/^(\d+) dari (\d+) resi terbaca\. Sisanya diletakkan di akhir\.$/, '$1 of $2 labels were read. The rest are placed at the end.'],
+ [/^Resi (\d+) \/ (\d+)(.*)$/, 'Label $1 / $2$3'],
+ [/^Cetak semua · (\d+) resi$/, 'Print all · $1 labels'],
+ [/^Simpan PDF · (\d+) resi$/, 'Save PDF · $1 labels'],
+ [/^Semua resi · (\d+)$/, 'All labels · $1'],
+ [/^(\d+) file · (\d+) halaman$/, '$1 files · $2 pages'],
+ [/^Membaca (\d+) file…$/, 'Reading $1 files…'],
+ [/^Dilewati: (.*)$/, function (m) { return 'Skipped: ' + enInner(m[1]); }],
+ [/^Tidak ada file yang bisa dibuka: (.*)\. Pilih PDF atau foto JPG\/PNG\.$/, function (m) { return 'No files could be opened: ' + enInner(m[1]) + '. Choose a PDF or a JPG/PNG photo.'; }],
+ [/^Sambung ulang · (.*)$/, 'Reconnect · $1'],
+ [/^Menyambung ke (.*)…$/, 'Connecting to $1…'],
+ [/^Menyiapkan (resi|PNG|PDF) (\d+) dari (\d+)…$/, function (m) { return 'Preparing ' + (m[1] === 'resi' ? 'label' : m[1]) + ' ' + m[2] + ' of ' + m[3] + '…'; }],
+ [/^Menyiapkan (resi|PNG|PDF)…$/, function (m) { return 'Preparing ' + (m[1] === 'resi' ? 'label' : m[1]) + '…'; }],
+ [/^Mengirim resi (\d+) dari (\d+)…$/, 'Sending label $1 of $2…'],
+ [/^Kotak cetak dibuka\. Pilih printer, ukuran kertas (.+) mm, margin Tidak ada, skala 100%\.$/, 'Print dialog opened. Choose the printer, paper size $1 mm, margins None, scale 100%.'],
+ [/^Label \((.+) mm\) lebih lebar dari area cetak printer \((.+) mm\), jadi resi dikecilkan agar muat\.$/, 'The label ($1 mm) is wider than the printer print area ($2 mm), so the shipping label is scaled down to fit.'],
+ [/^(Contoh · )?(\d+ × \d+ px) · area cetak (.+) mm$/, function (m) { return (m[1] ? 'Sample · ' : '') + m[2] + ' · print area ' + m[3] + ' mm'; }]
+];
+  function enInner(t) { return t.replace(/format belum didukung/g, 'unsupported format').replace(/bukan PDF atau foto/g, 'not a PDF or photo').replace(/dikunci kata sandi, dilewati/g, 'password-protected, skipped').replace(/dikunci kata sandi/g, 'password-protected').replace(/file PDF rusak atau belum selesai diunduh/g, 'PDF is damaged or not fully downloaded').replace(/PDF tidak bisa dibaca/g, 'PDF cannot be read').replace(/file kosong/g, 'empty file').replace(/foto HEIC dari iPhone belum didukung browser ini\. Simpan ulang sebagai JPG/g, 'iPhone HEIC photos are not supported by this browser. Save it again as JPG').replace(/foto tidak bisa dibuka/g, 'photo cannot be opened').replace(/tidak bisa dibuka/g, 'cannot be opened'); }
+  function T(s) {
+    if (UI_LANG !== 'en' || !s) return s;
+    var k = s.trim();
+    if (!k) return s;
+    var r = EN[k];
+    if (r === undefined) {
+      for (var i = 0; i < PAT.length; i++) {
+        var m = k.match(PAT[i][0]);
+        if (m) { r = typeof PAT[i][1] === 'function' ? PAT[i][1](m) : k.replace(PAT[i][0], PAT[i][1]); break; }
+      }
+    }
+    if (r === undefined) return s;
+    return s.match(/^\s*/)[0] + r + s.match(/\s*$/)[0];
+  }
+  var tracked = [];
+  var origText = new WeakMap();
+  function trNode(n) {
+    var cur = n.nodeValue, r = T(cur);
+    if (r !== cur) { if (!origText.has(n)) { origText.set(n, cur); tracked.push(n); } n.nodeValue = r; }
+  }
+  function trTree(root) {
+    if (root.nodeType === 3) { trNode(root); return; }
+    if (root.nodeType !== 1 || /^(SCRIPT|STYLE)$/.test(root.tagName)) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
+    while ((n = w.nextNode())) { if (!/^(SCRIPT|STYLE)$/.test(n.parentNode.tagName)) trNode(n); }
+    var els = root.querySelectorAll ? root.querySelectorAll('[aria-label],[title]') : [];
+    Array.prototype.forEach.call(els, function (el) {
+      ['aria-label', 'title'].forEach(function (a) {
+        if (!el.hasAttribute(a)) return;
+        var cur = el.getAttribute(a), r = T(cur);
+        if (r !== cur) { if (!el.dataset['id' + a.replace('-', '')]) el.dataset['id' + a.replace('-', '')] = cur; el.setAttribute(a, r); }
+      });
+    });
+  }
+  function trRestore() {
+    tracked.forEach(function (n) { if (origText.has(n)) { n.nodeValue = origText.get(n); origText.delete(n); } });
+    tracked = [];
+    Array.prototype.forEach.call(document.querySelectorAll('[data-idarialabel],[data-idtitle]'), function (el) {
+      if (el.dataset.idarialabel) { el.setAttribute('aria-label', el.dataset.idarialabel); delete el.dataset.idarialabel; }
+      if (el.dataset.idtitle) { el.setAttribute('title', el.dataset.idtitle); delete el.dataset.idtitle; }
+    });
+  }
+  var langObs = new MutationObserver(function (recs) {
+    if (UI_LANG !== 'en') return;
+    recs.forEach(function (r) {
+      if (r.type === 'characterData') trNode(r.target);
+      else Array.prototype.forEach.call(r.addedNodes, trTree);
+    });
+  });
+  function renderFootLinks() {
+    var box = $('foot-links');
+    box.innerHTML = '';
+    [['donate', '☕ Traktir kopi'], ['contact', 'Hubungi kami']].forEach(function (x) {
+      if (!LINKS[x[0]]) return;
+      var a = document.createElement('a');
+      a.href = LINKS[x[0]]; a.target = '_blank'; a.rel = 'noopener'; a.textContent = x[1];
+      box.appendChild(a);
+    });
+    box.hidden = !box.children.length;
+  }
+  function setLang(l, save) {
+    UI_LANG = l === 'en' ? 'en' : 'id';
+    if (save) { try { localStorage.setItem('rapikan-resi-ui', UI_LANG); } catch (e) { /* abaikan */ } }
+    document.documentElement.lang = UI_LANG;
+    Array.prototype.forEach.call(document.querySelectorAll('.langsw button'), function (b) { b.setAttribute('aria-pressed', b.dataset.l === UI_LANG ? 'true' : 'false'); });
+    trRestore();
+    chipify('size', 'size-chips', function (op) { return op.value === 'manual' ? 'Manual' : op.value.replace('x', ' × '); });
+    chipify('split', 'split-chips', function (op) { return SPLIT_SHORT[op.value] || op.text; });
+    chipify('sort', 'sort-chips', function (op) { return op.text; });
+    chipify('expos', 'expos-chips', function (op) { return op.text; });
+    renderFootLinks();
+    if (UI_LANG === 'en') trTree(document.body);
+    markChips('sort', 'sort-chips');
+    syncLabels(); updatePager(); updateFileLabel();
+    if (S.base.length > 1) applySort();
+    if (UI_LANG === 'en') trTree(document.body);
+  }
+  function initLang() {
+    var l = null;
+    try { l = localStorage.getItem('rapikan-resi-ui'); } catch (e) { /* abaikan */ }
+    if (!l) l = /^en/i.test(navigator.language || '') ? 'en' : 'id';
+    langObs.observe(document.body, { childList: true, characterData: true, subtree: true });
+    Array.prototype.forEach.call(document.querySelectorAll('.langsw button'), function (b) {
+      b.addEventListener('click', function () { setLang(b.dataset.l, true); });
+    });
+    setLang(l, false);
+  }
+
+
+  /* ---------- PWA: pasang ke layar utama dan mode offline ---------- */
+  var deferredInstall = null;
+  if (!IN_ART && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault(); deferredInstall = e; $('install-btn').hidden = false;
+    });
+    window.addEventListener('appinstalled', function () { deferredInstall = null; $('install-btn').hidden = true; });
+    $('install-btn').addEventListener('click', function () {
+      if (!deferredInstall) return;
+      deferredInstall.prompt();
+      deferredInstall.userChoice.then(function () { deferredInstall = null; $('install-btn').hidden = true; });
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () { /* abaikan */ }); });
+    }
+  }
+
+  /* ---------- Mulai ---------- */
+  S.sample = makeSample();
+  chipify('size', 'size-chips', function (op) { return op.value === 'manual' ? 'Manual' : op.value.replace('x', ' × '); });
+  chipify('sort', 'sort-chips', function (op) { return op.text; });
+  chipify('expos', 'expos-chips', function (op) { return op.text; });
+  markChips('sort', 'sort-chips');
+  chipify('split', 'split-chips', function (op) { return SPLIT_SHORT[op.value] || op.text; });
+  loadPrefs();
+  $('extra-opts').hidden = !$('extra').checked;
+  updatePager();
+  syncLabels();
+  update();
+  if (S.items.length && $('split').value !== '1') buildItems();
+
+  if (!IN_ART) {
+    if (!navigator.bluetooth || window.isSecureContext === false) {
+      $('nobt').hidden = false;
+      $('nobt-msg').textContent = !navigator.bluetooth
+        ? 'Browser ini tidak mendukung Web Bluetooth, atau halaman ini dibuka di dalam aplikasi lain.'
+        : 'Halaman ini dibuka dari alamat yang tidak aman, jadi Chrome memblokir Bluetooth.';
+      $('connect').disabled = true;
+    } else {
+      restoreDevice();
+    }
+  }
+  setTab(savedTab || (/Android/i.test(navigator.userAgent) ? 'bt' : 'browser'));
+  refreshButtons();
+  initLang();
+})();
+</script>
+
+</body></html>
